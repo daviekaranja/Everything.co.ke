@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  /* Keep your variables here */
+  --color-brand-dark: #0f172a;
+  --color-brand-bg: #f8fafc;
+  --color-card-bg: #ffffff;
+  --color-card-border: var(--color-slate-100);
+  --color-text-main: var(--color-slate-900);
+  --color-text-muted: var(--color-slate-500);
+  --color-text-header: var(--color-slate-400);
+  --color-accent: var(--color-orange-500);
+  --color-accent-hover: var(--color-orange-600);
+  --color-accent-soft: var(--color-orange-100);
+  --color-accent-text: var(--color-orange-700);
+}
+
+/* Correct Dark Mode Syntax */
+@variant dark (&:where(.dark, [data-theme="dark"], @media (prefers-color-scheme: dark)));
+
+/* Update variables for dark mode outside the theme block */
+.dark {
+  --color-brand-dark: #020617;
+  --color-brand-bg: #0f172a;
+  --color-card-bg: #1e293b;
+  --color-card-border: #334155;
+  --color-text-main: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-text-header: #cbd5e1;
+  --color-accent-soft: rgba(251, 146, 60, 0.15);
+  --color-accent-text: var(--color-orange-400);
+}
+
+/* --- THE FIX: No @layer wrapping, just top-level @utility --- */
+
+@utility service-card {
+  @apply bg-card-bg border border-card-border p-5 rounded-2xl 
+         hover:border-accent/50 transition-all duration-300 flex flex-col h-full;
+}
+
+@utility badge-provider {
+  @apply bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 
+         text-[10px] font-black px-2 py-1 rounded uppercase tracking-tighter;
+}
+
+@utility search-input {
+  @apply w-full p-4 pl-12 bg-slate-50 dark:bg-slate-800/50 border-none 
+         rounded-xl focus:ring-2 focus:ring-accent outline-none 
+         text-text-main;
+}
+
+@utility highlight-mark {
+  @apply bg-accent-soft text-accent-text font-bold rounded-sm px-0.5;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
