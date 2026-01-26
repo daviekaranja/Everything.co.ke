@@ -1,0 +1,25 @@
+# --- Monorepo / Node Core ---
+node_modules/
+.npm/
+.pnpm-store/
+.turbo/
+dist/
+build/
+
+# --- Environment Secrets (Global safety) ---
+.env
+.env.*
+!.env.example
+
+# --- Editor / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# --- Python Global Patterns ---
+# (Catch-all in case you run scripts outside apps/api)
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
