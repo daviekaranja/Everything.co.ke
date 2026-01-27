@@ -1,0 +1,16 @@
+name: Release Build
+
+on:
+  push:
+    # Trigger only on tags that follow semantic versioning (v1.2.3)
+    tags:
+      - 'v*'
+
+jobs:
+  call-docker-workflow:
+    uses: daviekaranja/workflows/.github/workflows/docker-build-push.yml@main
+    with:
+      image_name: "everything-api"
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
