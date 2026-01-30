@@ -2,7 +2,7 @@ name: Build and Push FastAPI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [master, dev]
     tags: ['v*']
     # Professional touch: Only trigger if files in the api or shared packages change
     paths:
@@ -13,7 +13,7 @@ on:
 jobs:
   build-api:
     # Syntax: {owner}/{repo}/.github/workflows/{filename}@{ref}
-    uses: davie-karanja/workflows/.github/workflows/docker-build-push.yml@main
+    uses: davie-karanja/workflows/.github/workflows/docker-build-push.yml@master
     with:
       image_name: "everything-api"
       # We set context to root ('.') so Docker can see 'packages/' if needed
