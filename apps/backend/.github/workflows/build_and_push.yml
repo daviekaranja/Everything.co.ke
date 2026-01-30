@@ -17,7 +17,7 @@ jobs:
     with:
       image_name: "everything-api"
       # We set context to root ('.') so Docker can see 'packages/' if needed
-      build_context: "."
+      build_context: "./apps/backend"
       # We point specifically to the Dockerfile inside the api folder
-      dockerfile_path: "./apps/api/Dockerfile"
+      dockerfile_path: "./Dockerfile"
     secrets: inherit
