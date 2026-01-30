@@ -2,7 +2,7 @@ name: Build and Push FastAPI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [master, dev]
     tags: ['v*']
     # Professional touch: Only trigger if files in the api or shared packages change
     paths:
