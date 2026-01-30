@@ -8,7 +8,7 @@ on:
     paths:
       - 'apps/backend/**'
       - 'packages/**'
-      - '.github/workflows/build_and_deploy.yml'
+      - '.github/workflows/build_and_push.yml'
 
 jobs:
   build-api:
