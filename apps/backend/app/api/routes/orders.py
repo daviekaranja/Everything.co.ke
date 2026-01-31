@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-
 from app.lib.db.schemas import UserCreateSchema, OrderRequestSchema, OrderCreateSchema
 from app.lib.db.session import get_session
 from app.lib.utils.logging import logger
