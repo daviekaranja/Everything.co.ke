@@ -20,8 +20,8 @@ export default function NotFound() {
         {/* Message */}
         <div className="space-y-4">
           <p className="text-text-muted text-lg md:text-xl font-medium max-w-md mx-auto">
-            Oops! It seems the page you&apos;re looking for has moved or doesn&apos;t
-            exist in our directory.
+            Oops! It seems the page you&apos;re looking for has moved or
+            doesn&apos;t exist in our directory.
           </p>
         </div>
 

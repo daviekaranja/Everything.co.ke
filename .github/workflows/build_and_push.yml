@@ -1,0 +1,46 @@
+# name: Build and Push FastAPI
+
+# on:
+#   push:
+#     branches: [master, dev]
+#     tags: ['v*']
+#     # Professional touch: Only trigger if files in the api or shared packages change
+#     paths:
+#       - 'apps/backend/**'
+#       - 'packages/**'
+#       - '.github/workflows/build_and_push.yml'
+
+# jobs:
+#   build-api:
+#     # Syntax: {owner}/{repo}/.github/workflows/{filename}@{ref}
+#     uses: davie-karanja/workflows/.github/workflows/docker-build-push.yml@master
+#     with:
+#       image_name: "everything-api"
+#       # We set context to root ('.') so Docker can see 'packages/' if needed
+#       build_context: "./apps/backend"
+#       # We point specifically to the Dockerfile inside the api folder
+#       dockerfile_path: "./Dockerfile"
+#     secrets: inherit
+
+
+name: Build and Push FastAPI
+
+on:
+  push:
+    branches: [master, dev]
+    tags: ['v*']
+    paths:
+      - 'apps/backend/**'
+      - 'packages/**'
+      - '.github/workflows/build_and_push.yml'
+
+jobs:
+  build-api:
+    uses: davie-karanja/workflows/.github/workflows/docker-build-push.yml@master
+    with:
+      image_name: "everything-api"
+      # IMPORTANT: Set context to root ('.') so Docker can access 'packages/'
+      build_context: "."
+      # Point to the specific Dockerfile relative to the context (root)
+      dockerfile_path: "./apps/backend/Dockerfile"
+    secrets: inherit

@@ -1,12 +1,13 @@
 # 224d24cb-8859-4e2b-9f6d-1a8e41468356
 
-from  .base import BaseCRUD
+from .base import BaseCRUD
 from app.lib.db.models import Order
 from app.lib.db.schemas import (
     OrderCreateSchema,
     OrderUpdateSchema,
 )
 from ..utils.logging import logger
+
 
 class OrderCRUD(BaseCRUD[Order, OrderCreateSchema, OrderUpdateSchema]):
     """CRUD operations for Order model."""

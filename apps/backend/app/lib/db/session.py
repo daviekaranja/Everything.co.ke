@@ -1,6 +1,5 @@
 from typing import AsyncGenerator
 
-from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -33,9 +32,10 @@ engine: AsyncEngine = create_async_engine(
 # ---------------------------------------------------------
 AsyncSessionLocal = sessionmaker(
     bind=engine,
-    class_=AsyncSession,   # 👈 SQLModel AsyncSession
+    class_=AsyncSession,  # 👈 SQLModel AsyncSession
     expire_on_commit=False,
 )
+
 
 # ---------------------------------------------------------
 # FastAPI dependency

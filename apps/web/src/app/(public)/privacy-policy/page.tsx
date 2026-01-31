@@ -64,10 +64,10 @@ export default function PrivacyPolicyPage() {
 
           <PolicySection title="3. Data Retention & Deletion">
             <div className="bg-accent/5 border border-accent/20 p-6 rounded-2xl italic text-text-main">
-              &quot;We maintain a strict &apos;Clear Chat&apos; policy. Once your service is
-              confirmed and delivered, we encourage clients to use WhatsApp&apos;s
-              &apos;Delete for Everyone&apos; feature for any uploaded ID copies or
-              sensitive documents.&quot;
+              &quot;We maintain a strict &apos;Clear Chat&apos; policy. Once
+              your service is confirmed and delivered, we encourage clients to
+              use WhatsApp&apos;s &apos;Delete for Everyone&apos; feature for
+              any uploaded ID copies or sensitive documents.&quot;
             </div>
           </PolicySection>
 

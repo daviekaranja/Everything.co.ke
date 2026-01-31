@@ -174,11 +174,7 @@ class BaseCRUD(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db: AsyncSession,
         id: UUID,
     ) -> Optional[ModelType]:
-        stmt = (
-            select(self.model)
-            .where(self.model.id == id)
-            .limit(1)
-        )
+        stmt = select(self.model).where(self.model.id == id).limit(1)
         result = await db.exec(stmt)
         return result.first()
 
@@ -209,7 +205,7 @@ class BaseCRUD(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db_obj = self.model(**obj_data)
 
         db.add(db_obj)
-        await db.flush()      # 👈 let DB generate UUID + timestamps
+        await db.flush()  # 👈 let DB generate UUID + timestamps
         await db.refresh(db_obj)
 
         return db_obj

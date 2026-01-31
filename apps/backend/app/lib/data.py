@@ -9,10 +9,21 @@ services_data = [
         "description": "Apply for your KRA PIN certificate online in Kenya. Our professional agents ensure your iTax registration is handled accurately.",
         "seoTitle": "KRA PIN Registration Online Kenya | Get Your PIN Fast",
         "seoDescription": "Need a KRA PIN for a bank account or job? Get your KRA PIN certificate online in minutes.",
-        "requirements": ["National ID Card / Passport", "Valid Email Address", "Active Kenyan Phone Number", "Physical Address details"],
+        "requirements": [
+            "National ID Card / Passport",
+            "Valid Email Address",
+            "Active Kenyan Phone Number",
+            "Physical Address details",
+        ],
         "faqs": [
-            {"q": "Can I get a KRA PIN without an ID?", "a": "No, a valid National ID or Passport is required."},
-            {"q": "How long does it take?", "a": "Most registrations are completed within 30 minutes to 2 hours."}
+            {
+                "q": "Can I get a KRA PIN without an ID?",
+                "a": "No, a valid National ID or Passport is required.",
+            },
+            {
+                "q": "How long does it take?",
+                "a": "Most registrations are completed within 30 minutes to 2 hours.",
+            },
         ],
         "pricing": {"governmentFee": "0", "serviceFee": "0", "total": "200"},
         "estimatedTime": "30 mins – 2 hours",
@@ -29,7 +40,10 @@ services_data = [
         "seoDescription": "Lost your KRA PIN certificate or iTax password? We help you recover your tax details quickly.",
         "requirements": ["National ID Number", "Full Name as per ID"],
         "faqs": [
-            {"q": "What if I don't have access to my registered email?", "a": "We assist in the email change process through KRA to restore your account access."}
+            {
+                "q": "What if I don't have access to my registered email?",
+                "a": "We assist in the email change process through KRA to restore your account access.",
+            }
         ],
         "pricing": {"governmentFee": "0", "serviceFee": "5", "total": "5"},
         "estimatedTime": "30 – 60 minutes",
@@ -46,7 +60,10 @@ services_data = [
         "seoDescription": "Avoid KRA penalties by filing your 2026 tax returns today.",
         "requirements": ["KRA PIN", "iTax Password", "P9 Form (if employed)"],
         "faqs": [
-            {"q": "What is the penalty for late filing?", "a": "The penalty for late filing for individuals is KES 2,000 per year."}
+            {
+                "q": "What is the penalty for late filing?",
+                "a": "The penalty for late filing for individuals is KES 2,000 per year.",
+            }
         ],
         "pricing": {"governmentFee": "0", "serviceFee": "100", "total": "100"},
         "estimatedTime": "Same day",
@@ -61,9 +78,16 @@ services_data = [
         "description": "Stay legal on Kenyan roads with our fast NTSA Driving Licence renewal service.",
         "seoTitle": "NTSA Driving License Renewal Kenya | 1 & 3 Year Renewal",
         "seoDescription": "Renew your Kenyan Driving License online. Fast eCitizen NTSA processing.",
-        "requirements": ["Original Driving Licence", "eCitizen Account Access", "National ID"],
+        "requirements": [
+            "Original Driving Licence",
+            "eCitizen Account Access",
+            "National ID",
+        ],
         "faqs": [
-            {"q": "How much does NTSA charge for 3 years?", "a": "The government fee for a 3-year renewal is KES 3,050."}
+            {
+                "q": "How much does NTSA charge for 3 years?",
+                "a": "The government fee for a 3-year renewal is KES 3,050.",
+            }
         ],
         "pricing": {"governmentFee": "650", "serviceFee": "150", "total": "850"},
         "estimatedTime": "Same day – 2 days",
@@ -78,11 +102,22 @@ services_data = [
         "description": "End-to-end assistance with NTSA motor vehicle ownership transfer.",
         "seoTitle": "Logbook Transfer Kenya | NTSA Motor Vehicle Transfer",
         "seoDescription": "Professional assistance for NTSA logbook transfers.",
-        "requirements": ["Logbook (Scan/Copy)", "Buyer/Seller ID & KRA PIN", "Sales Agreement"],
-        "faqs": [
-            {"q": "Do both parties need eCitizen?", "a": "Yes, both the buyer and seller must have active eCitizen accounts."}
+        "requirements": [
+            "Logbook (Scan/Copy)",
+            "Buyer/Seller ID & KRA PIN",
+            "Sales Agreement",
         ],
-        "pricing": {"governmentFee": "Varies (by CC)", "serviceFee": "3,000", "total": "3,000+"},
+        "faqs": [
+            {
+                "q": "Do both parties need eCitizen?",
+                "a": "Yes, both the buyer and seller must have active eCitizen accounts.",
+            }
+        ],
+        "pricing": {
+            "governmentFee": "Varies (by CC)",
+            "serviceFee": "3,000",
+            "total": "3,000+",
+        },
         "estimatedTime": "2 – 5 business days",
     },
     {
@@ -95,9 +130,16 @@ services_data = [
         "description": "Apply for your Certificate of Good Conduct for employment or travel.",
         "seoTitle": "Apply for Certificate of Good Conduct Kenya | DCI Clearance",
         "seoDescription": "Get your Police Clearance Certificate (Good Conduct) easily.",
-        "requirements": ["National ID Card", "Original Fingerprint processing", "eCitizen Login"],
+        "requirements": [
+            "National ID Card",
+            "Original Fingerprint processing",
+            "eCitizen Login",
+        ],
         "faqs": [
-            {"q": "Where do I take fingerprints?", "a": "Choose your nearest DCI headquarters or Huduma Center."}
+            {
+                "q": "Where do I take fingerprints?",
+                "a": "Choose your nearest DCI headquarters or Huduma Center.",
+            }
         ],
         "pricing": {"governmentFee": "1,050", "serviceFee": "1,450", "total": "2,500"},
         "estimatedTime": "2 – 4 weeks",
@@ -112,12 +154,18 @@ services_data = [
         "description": "Professional guidance for first-time or subsequent HELB loan applications.",
         "seoTitle": "HELB Loan Application Help | University Funding Kenya",
         "seoDescription": "Need help applying for HELB? We guide you through the student portal.",
-        "requirements": ["HELB Smart Card/Account", "Guarantors' IDs", "Admission Letter"],
+        "requirements": [
+            "HELB Smart Card/Account",
+            "Guarantors' IDs",
+            "Admission Letter",
+        ],
         "faqs": [
-            {"q": "Is HELB only for University students?", "a": "No, HELB also provides loans for TVET and College students."}
+            {
+                "q": "Is HELB only for University students?",
+                "a": "No, HELB also provides loans for TVET and College students.",
+            }
         ],
         "pricing": {"governmentFee": "0", "serviceFee": "2,000", "total": "2,000"},
         "estimatedTime": "1 – 2 hours",
-    }
+    },
 ]
-

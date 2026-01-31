@@ -4,6 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr
 
+
 # users
 class UserSchema(BaseModel):
     first_name: str
@@ -11,7 +12,6 @@ class UserSchema(BaseModel):
     email: EmailStr
     phone_number: str
     contact_method: str
-
 
 
 class UserCreateSchema(BaseModel):
@@ -31,15 +31,11 @@ class UserUpdateSchema(BaseModel):
     email: str
 
 
-
-
-
 class BlogSchema(BaseModel):
     title: str
     content: str
     author_id: int
     is_published: bool
-
 
 
 # class ServiceSchema(BaseModel):
@@ -57,19 +53,18 @@ class BlogSchema(BaseModel):
 #     slug: str = Field(unique=True, index=True)
 
 
-
-
-
 class OrderSchema(BaseModel):
     user_id: UUID
     service_id: UUID
     order_date: datetime
     status: str
 
+
 class OrderCreateSchema(BaseModel):
     user_id: UUID
     service_id: UUID
     status: str
+
 
 class OrderUpdateSchema(BaseModel):
     status: str
@@ -80,11 +75,9 @@ class OrderRequestSchema(UserCreateSchema):
     status: str
 
 
-
 # from pydantic import BaseModel, Field
 # from typing import List, Optional, Literal
 # from datetime import datetime
-
 
 
 # --- Shared Nested Models ---
@@ -92,27 +85,33 @@ class FAQ(BaseModel):
     q: str
     a: str
 
+
 class Pricing(BaseModel):
     governmentFee: str
     serviceFee: str
     total: str
 
+
 class Author(BaseModel):
     name: str
     role: str
 
+
 class ImageInfo(BaseModel):
     url: str
     alt: str
+
 
 class ContentSection(BaseModel):
     heading: str
     body: str
     hasAdAfter: bool = False
 
+
 class BlogContent(BaseModel):
     introduction: str
     sections: List[ContentSection]
+
 
 # --- Main Models ---
 class ServiceBase(BaseModel):
@@ -130,6 +129,7 @@ class ServiceBase(BaseModel):
     pricing: Pricing
     estimatedTime: str
 
+
 class BlogPostBase(BaseModel):
     title: str
     slug: str
@@ -146,10 +146,9 @@ class BlogPostBase(BaseModel):
     faqs: List[FAQ]
 
 
-
-
 class ServiceCreateSchema(ServiceBase):
     pass
+
 
 class ServiceUpdateSchema(ServiceBase):
     pass

@@ -6,8 +6,6 @@ from sqlmodel import SQLModel
 # import models to ensure they are registered with SQLModel.metadata
 
 # explicitly import metadata
-from app.lib.db.models import User
-from app.lib.db.models import *
 
 from app.core.config import settings
 

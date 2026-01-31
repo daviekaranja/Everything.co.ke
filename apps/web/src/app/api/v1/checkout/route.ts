@@ -5,7 +5,6 @@ import nodemailer from "nodemailer";
 console.log(process.env.EMAIL_USER);
 console.log(process.env.EMAIL_PASS);
 
-
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -74,7 +73,7 @@ export async function POST(req: Request) {
           AccountReference: serviceName.substring(0, 12),
           TransactionDesc: `Payment for ${serviceName}`,
         }),
-      }
+      },
     );
 
     // Wait for both to finish (or at least attempt)
@@ -82,13 +81,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { message: "Checkout initiated successfully" },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Checkout Error:", error);
     return NextResponse.json(
       { error: "Failed to process request" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

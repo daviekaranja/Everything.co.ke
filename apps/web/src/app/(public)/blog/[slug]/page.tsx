@@ -1,7 +1,7 @@
 import { blogPosts } from "@/lib/data/blogs";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import {  Clock, ArrowRight, ChevronRight } from "lucide-react";
+import { Clock, ArrowRight, ChevronRight } from "lucide-react";
 import AdSlot from "@/lib/components/blog/Adslot";
 import Image from "next/image";
 
