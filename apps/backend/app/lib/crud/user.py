@@ -9,7 +9,6 @@ from app.lib.db.models import User
 from app.lib.db.schemas import UserCreateSchema, UserUpdateSchema
 
 
-
 from ..utils.logging import logger
 
 
@@ -19,9 +18,9 @@ class UserCRUD(BaseCRUD[User, UserCreateSchema, UserUpdateSchema]):
     model = User
 
     async def get_by_email(
-            self,
-            db: AsyncSession,
-            email: EmailStr,
+        self,
+        db: AsyncSession,
+        email: EmailStr,
     ) -> Optional[User]:
         stmt = select(self.model).where(self.model.email == email)
         result = await db.exec(stmt)

@@ -14,9 +14,7 @@ class ServiceCRUD(BaseCRUD[Service, ServiceCreateSchema, ServiceUpdateSchema]):
 
     async def get_by_slug(self, db, slug: str) -> Service:
         """Get a service by slug."""
-        query = await db.execute(
-            self.model.select().where(self.model.slug == slug)
-        )
+        query = await db.execute(self.model.select().where(self.model.slug == slug))
         return query.scalars().first()
 
     async def create_service(self, db, *, obj_in: ServiceCreateSchema) -> Service:
@@ -27,12 +25,4 @@ class ServiceCRUD(BaseCRUD[Service, ServiceCreateSchema, ServiceUpdateSchema]):
         return db_obj
 
 
-
-
-
 service_crud = ServiceCRUD(Service)
-
-
-
-
-

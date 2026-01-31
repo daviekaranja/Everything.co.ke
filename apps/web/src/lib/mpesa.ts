@@ -47,7 +47,7 @@ export async function initiateSTKPush(
     AccountReference: "EverythingKE",
     TransactionDesc: orderId,
     };
-    
+
     console.log(payload);
 
   const response = await fetch(
@@ -61,7 +61,7 @@ export async function initiateSTKPush(
       body: JSON.stringify(payload),
     }
   );
-    
+
     const data = await response.json();
   console.log(data);
 

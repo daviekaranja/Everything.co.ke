@@ -11,15 +11,24 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 @router.get("/", summary="Retrieve a list of services")
-async def get_services(db: AsyncSession = Depends(get_session), skip: int = 0, limit: int = 100, service_id: int = None):
+async def get_services(
+    db: AsyncSession = Depends(get_session),
+    skip: int = 0,
+    limit: int = 100,
+    service_id: int = None,
+):
     if service_id:
         service = await service_crud.get(db, id=service_id)
         return service
     services = await service_crud.get_multi(db, skip=skip, limit=limit)
     return services
 
+
 @router.post("/create", summary="Create a new service")
-async def create_service(db: AsyncSession = Depends(get_session), *, db_obj: ServiceCreateSchema):
+async def create_service(
+    db: AsyncSession = Depends(get_session), *, db_obj: ServiceCreateSchema
+):
     service = await service_crud.create_service(db=db, obj_in=db_obj)
     return service

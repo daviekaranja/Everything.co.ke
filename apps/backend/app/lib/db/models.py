@@ -8,26 +8,24 @@ from sqlmodel import Field, SQLModel, Column
 
 # enums for both categories in service and blogs
 
+
 class ServiceCategory(Enum):
     GOVERNMENT = "Government"
     EDUCATION = "Education"
     BUSINESS = "Business"
 
-from app.lib.utils.helpers import utcnow
 
 # -----------------------
 # Base Mixins
 # -----------------------
+
 
 class TimestampMixin(SQLModel):
     # Use sa_type and sa_column_kwargs instead of sa_column=Column(...)
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         sa_type=DateTime(timezone=True),
-        sa_column_kwargs={
-            "server_default": func.now(),
-            "nullable": False
-        }
+        sa_column_kwargs={"server_default": func.now(), "nullable": False},
     )
 
     updated_at: datetime = Field(
@@ -36,14 +34,14 @@ class TimestampMixin(SQLModel):
         sa_column_kwargs={
             "server_default": func.now(),
             "onupdate": func.now(),
-            "nullable": False
-        }
+            "nullable": False,
+        },
     )
 
     deleted_at: Optional[datetime] = Field(
         default=None,
         sa_type=DateTime(timezone=True),
-        sa_column_kwargs={"nullable": True}
+        sa_column_kwargs={"nullable": True},
     )
 
 
@@ -56,13 +54,15 @@ class BaseMixin(TimestampMixin):
         sa_type=PG_UUID(as_uuid=True),
         sa_column_kwargs={
             "server_default": text("gen_random_uuid()"),
-            "nullable": False
-        }
+            "nullable": False,
+        },
     )
+
 
 # -----------------------
 # Concrete Tables
 # -----------------------
+
 
 class User(BaseMixin, table=True):
     __tablename__ = "users"
@@ -90,6 +90,7 @@ class Order(BaseMixin, table=True):
 
 
 # --- SQLModel Table Definitions ---
+
 
 class Service(BaseMixin, table=True):
     __tablename__ = "services"
@@ -128,6 +129,7 @@ class BlogPost(BaseMixin, table=True):
     seo_title: str = Field(alias="seoTitle")
     seo_description: str = Field(alias="seoDescription")
     content: Dict[str, Any] = Field(sa_column=Column(JSONB))
-    related_services: List[str] = Field(sa_column=Column(JSONB), alias="relatedServices")
+    related_services: List[str] = Field(
+        sa_column=Column(JSONB), alias="relatedServices"
+    )
     faqs: List[Dict[str, str]] = Field(sa_column=Column(JSONB))
-

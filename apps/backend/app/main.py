@@ -10,10 +10,10 @@ logger.info("Starting EverthingKe API application")
 
 app.include_router(api_router)
 
+
 @app.get("/")
 async def read_root():
     logger.info("Root endpoint accessed")
     logger.info(settings.async_database_url)
     logger.info(settings.database_url)
     return {"Hello": "World"}
-

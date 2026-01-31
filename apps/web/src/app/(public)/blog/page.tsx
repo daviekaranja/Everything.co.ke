@@ -31,9 +31,9 @@ export default function BlogListingPage() {
               2026.
             </h1>
             <p className="text-lg text-text-muted dark:text-slate-400 max-w-2xl leading-relaxed">
-              From the new eCitizen biometric recovery to KRA&apos;s automated AI tax
-              validation—we break down complex government systems into simple,
-              actionable guides.
+              From the new eCitizen biometric recovery to KRA&apos;s automated
+              AI tax validation—we break down complex government systems into
+              simple, actionable guides.
             </p>
           </div>
         </div>
@@ -50,10 +50,10 @@ export default function BlogListingPage() {
           <div className="flex flex-col lg:flex-row gap-8 items-center">
             <div className="w-full lg:w-3/5 aspect-video relative rounded-[2rem] overflow-hidden">
               <Image
-              src={featuredPost.image.url}
-              alt={featuredPost.image.alt}
-              fill
-              className="object-cover"
+                src={featuredPost.image.url}
+                alt={featuredPost.image.alt}
+                fill
+                className="object-cover"
               />
             </div>
             <div className="w-full lg:w-2/5 p-4 lg:pr-10">
