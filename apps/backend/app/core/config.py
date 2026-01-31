@@ -2,11 +2,17 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    # This tells Pydantic:
+    # 1. Look for a .env file if it exists
+    # 2. But ALWAYS prioritize actual environment variables (from Docker)
     model_config = SettingsConfigDict(
-        env_file="./.env.local", env_file_encoding="utf-8"
+        env_file=(".env", ".env.local"),
+        env_file_encoding="utf-8",
+        extra="ignore",  # Prevents crashing if extra vars are in the env
     )
 
     app_name: str = "EverthingKe API"
+
     app_version: str = "0.1.0"
 
     # database settings
