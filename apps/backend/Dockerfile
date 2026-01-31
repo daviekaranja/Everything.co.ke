@@ -25,6 +25,9 @@ RUN pip install --no-cache-dir -r requirements.txt && pip install gunicorn
 # Note: This only copies the backend folder's contents into /app
 COPY apps/backend/ .
 
+# Give execution rights to the entrypoint script
+RUN chmod +x entrypoint.sh
+
 # 4. (Optional) If you have a shared package you need:
 # COPY packages/shared-auth ./shared-auth
 
@@ -33,4 +36,8 @@ COPY apps/backend/ .
 EXPOSE 8000
 
 # Ensure the path to 'main:app' is correct inside the /app folder
-CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "main:app", "--bind", "0.0.0.0:8000"]
+#CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "main:app", "--bind", "0.0.0.0:8000"]
+#CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--chdir", "/app", "app.main:app", "--bind", "0.0.0.0:8000"]
+
+# Use the script as the entrypoint
+ENTRYPOINT ["./entrypoint.sh"]
