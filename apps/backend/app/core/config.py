@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     app_name: str = "EverthingKe API"
 
     app_version: str = "0.1.0"
+    image_tag: str = "latest"
 
     # database settings
     postgres_user: str
