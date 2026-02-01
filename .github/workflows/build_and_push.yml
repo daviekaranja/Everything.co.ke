@@ -15,7 +15,7 @@ jobs:
     with:
       image_name: "everything-api"
       build_context: "."
-      dockerfile_path: ./apps/backend/Dockerfile"
+      dockerfile_path: ./apps/backend/Dockerfile
     secrets: inherit
 
   # --- JOB 2: Deploy to VPS ---
