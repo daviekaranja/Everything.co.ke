@@ -41,8 +41,8 @@ on:
     branches:
       - master
       - dev
-    # tags:
-    #   - "v*"
+    tags:
+      - "v*"
     # paths:
     #   - "apps/backend/**"
     #   - "packages/**"
