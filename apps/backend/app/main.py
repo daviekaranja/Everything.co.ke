@@ -3,7 +3,7 @@ from app.lib.utils.logging import logger
 from app.core.config import settings
 from app.api.api_router import api_router
 
-app = FastAPI(title=settings.app_name)
+app = FastAPI(title=settings.app_name, version=settings.image_tag)
 
 logger.info("Starting EverthingKe API application")
 
