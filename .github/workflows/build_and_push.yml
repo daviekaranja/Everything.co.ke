@@ -28,7 +28,7 @@ on:
     tags: ["v*"]
     paths:
       - "apps/backend/**"
-      - "packages/**"
+      # - "packages/**"
       - ".github/workflows/build_and_deploy.yml"
 
 jobs:
@@ -38,7 +38,7 @@ jobs:
     with:
       image_name: "everything-api"
       build_context: "./apps/backend"
-      dockerfile_path: "./Dockerfile"
+      dockerfile_path: ./apps/backend/Dockerfile"
     secrets: inherit
 
   # --- JOB 2: Deploy to VPS ---
