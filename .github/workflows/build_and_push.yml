@@ -1,5 +1,4 @@
 name: Build and Push FastAPI
-
 on:
   push:
     branches: [master, dev]
