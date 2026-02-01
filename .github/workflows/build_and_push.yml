@@ -32,8 +32,6 @@
 #       VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
 #       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
 
-
-
 name: Build, Push & Deploy Everything API
 
 on:
@@ -66,7 +64,7 @@ jobs:
     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
     uses: daviekaranja/workflows/.github/workflows/reusable-deploy.yml@master
     with:
-      target_directory: "/docker_stack/everythingke"
+      target_directory: "docker_stack/everythingke"
       image_tag: ${{ github.ref_name }}
     secrets:
       VPS_HOST: ${{ secrets.VPS_HOST }}
