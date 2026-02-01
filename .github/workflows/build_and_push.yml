@@ -1,21 +1,56 @@
+# name: Build and Push FastAPI
+
+# on:
+#   push:
+#     branches: [master, dev]
+#     tags: ['v*']
+#     paths:
+#       - 'apps/backend/**'
+#       - 'packages/**'
+#       - '.github/workflows/build_and_push.yml'
+
+# jobs:
+#   build-api:
+#     uses: daviekaranja/workflows/.github/workflows/docker-build-push.yml@master
+#     with:
+#       image_name: "everything-api"
+#       # IMPORTANT: Set context to root ('.') so Docker can access 'packages/'
+#       build_context: "."
+#       # Point to the specific Dockerfile relative to the context (root)
+#       dockerfile_path: "./apps/backend/Dockerfile"
+#     secrets: inherit
+
 name: Build and Push FastAPI
 
 on:
   push:
     branches: [master, dev]
-    tags: ['v*']
+    tags: ["v*"]
     paths:
-      - 'apps/backend/**'
-      - 'packages/**'
-      - '.github/workflows/build_and_push.yml'
+      - "apps/backend/**"
+      # - "packages/**"
+      - ".github/workflows/build_and_deploy.yml"
 
 jobs:
+  # --- JOB 1: Build the Image ---
   build-api:
     uses: daviekaranja/workflows/.github/workflows/docker-build-push.yml@master
     with:
       image_name: "everything-api"
-      # IMPORTANT: Set context to root ('.') so Docker can access 'packages/'
-      build_context: "."
-      # Point to the specific Dockerfile relative to the context (root)
-      dockerfile_path: "./apps/backend/Dockerfile"
+      build_context: "./apps/backend"
+      dockerfile_path: ./apps/backend/Dockerfile"
     secrets: inherit
+
+  # --- JOB 2: Deploy to VPS ---
+  deploy-api:
+    needs: build-api
+    # Logic: Deploy on master branch OR any tag starting with 'v'
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+    uses: daviekaranja/workflows/.github/workflows/reusable-deploy.yml@master
+    with:
+      target_directory: "/docker_stack/everythingke"
+      image_tag: ${{ github.ref_name }}
+    secrets:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
