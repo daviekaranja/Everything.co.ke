@@ -9,7 +9,7 @@ from app.lib.db.models import User
 from app.lib.db.schemas import UserCreateSchema, UserUpdateSchema
 
 
-from ..utils.logging import logger
+from ..utils.logger_setup import logger
 
 
 class UserCRUD(BaseCRUD[User, UserCreateSchema, UserUpdateSchema]):
