@@ -6,7 +6,7 @@ from app.lib.db.schemas import (
     OrderCreateSchema,
     OrderUpdateSchema,
 )
-from ..utils.logging import logger
+from ..utils.logger_setup import logger
 
 
 class OrderCRUD(BaseCRUD[Order, OrderCreateSchema, OrderUpdateSchema]):

@@ -1,34 +1,114 @@
-from fastapi import APIRouter, Depends
+from typing import List, Optional, Dict, Any, Annotated
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.api.deps import get_session
 from app.lib.crud.service import service_crud
-from app.lib.db.schemas import ServiceCreateSchema
-from app.lib.db.session import get_session
+from app.lib.db.models import ServiceCategory, ServiceProvider
+from app.lib.db.schemas import ServiceRead
+
 
 router = APIRouter(
-    prefix="/services",
-    tags=["services"],
     responses={404: {"description": "Not found"}},
 )
 
+# Cache constants for easy maintenance
+LONG_CACHE = "public, s-maxage=3600, stale-while-revalidate=59"
+SHORT_CACHE = "public, s-maxage=600, stale-while-revalidate=30"
 
-@router.get("/", summary="Retrieve a list of services")
+
+@router.get(
+    "/", summary="Retrieve services with filters", response_model=List[ServiceRead]
+)
 async def get_services(
+    response: Response,
     db: AsyncSession = Depends(get_session),
+    category: Optional[ServiceCategory] = None,
+    provider: Optional[ServiceProvider] = None,
     skip: int = 0,
     limit: int = 100,
-    service_id: int = None,
 ):
-    if service_id:
-        service = await service_crud.get(db, id=service_id)
-        return service
-    services = await service_crud.get_multi(db, skip=skip, limit=limit)
-    return services
+    """
+    Retrieve a list of services with optional category and provider filtering.
+
+    - **category**: Filter by service category (e.g., Taxation, Transport).
+    - **provider**: Filter by service provider (e.g., KRA, NTSA).
+    - **skip/limit**: Standard pagination.
+    """
+    try:
+        response.headers["Cache-Control"] = LONG_CACHE
+        return await service_crud.get_multi_filtered(
+            db, category=category, provider=provider, skip=skip, limit=limit
+        )
+    except Exception:
+        raise HTTPException(status_code=500, detail="Error fetching services list")
 
 
-@router.post("/create", summary="Create a new service")
-async def create_service(
-    db: AsyncSession = Depends(get_session), *, db_obj: ServiceCreateSchema
-):
-    service = await service_crud.create_service(db=db, obj_in=db_obj)
+@router.get("/by-slug/{slug}", summary="Get detail by slug", response_model=ServiceRead)
+async def get_service_by_slug(slug: str, db: AsyncSession = Depends(get_session)):
+    """
+    Fetch full details for a single service using its unique slug.
+    Primarily used for Next.js dynamic product pages.
+    """
+    service = await service_crud.get_by_slug(db, slug=slug)
+    if not service:
+        raise HTTPException(
+            status_code=404, detail=f"Service with slug '{slug}' not found"
+        )
     return service
+
+
+@router.get("/search-manifest", response_model=List[Dict[str, Any]])
+async def get_search_manifest(
+    response: Response, db: AsyncSession = Depends(get_session), limit: int = 200
+):
+    """
+    Returns a minified JSON list of all active services (name, slug, category, price).
+    Optimized for local frontend filtering in the search bar.
+    """
+    response.headers["Cache-Control"] = LONG_CACHE
+    manifest = await service_crud.get_search_manifest(db, limit=limit)
+    if not manifest:
+        return []
+    return manifest
+
+
+@router.get("/suggestions", response_model=List[dict])
+async def search_suggestions(
+    q: Annotated[str, Query(min_length=3)], db: AsyncSession = Depends(get_session)
+):
+    """
+    Fuzzy search endpoint using pg_trgm for typo tolerance.
+    Only called when local manifest results are insufficient.
+    """
+    try:
+        return await service_crud.get_search_suggestions(db, query=q)
+    except Exception:
+        # Log error here in production
+        raise HTTPException(
+            status_code=500, detail="Search engine temporarily unavailable"
+        )
+
+
+@router.get("/trending", response_model=List[dict])
+async def get_trending_services(
+    response: Response, db: AsyncSession = Depends(get_session), limit: int = 5
+):
+    """
+    Fetches the highest ranked services based on popularity_score.
+    Cached for a shorter duration to reflect shifting trends.
+    """
+    response.headers["Cache-Control"] = SHORT_CACHE
+    return await service_crud.get_trending_services(db, limit=limit)
+
+
+@router.get("/filters-manifest")
+async def get_filters_manifest(
+    response: Response, db: AsyncSession = Depends(get_session)
+):
+    """
+    Provides a mapping of active Providers and Categories to drive
+    the dynamic sidebar filter UI.
+    """
+    response.headers["Cache-Control"] = LONG_CACHE
+    return await service_crud.get_filters_manifest(db)
