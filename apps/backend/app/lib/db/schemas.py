@@ -3,8 +3,42 @@ from typing import Literal, List, Optional
 from uuid import UUID
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from pydantic.alias_generators import to_camel
+from enum import Enum as PyEnum
 
-from app.lib.db.models import ServiceCategory, ServiceProvider
+
+# --- ENUMS ---
+
+
+class ServiceCategory(str, PyEnum):
+    TRANSPORT = "Transport & Motoring"
+    CIVIL_REG = "Civil Registration"
+    TAXATION = "Taxation & KRA"
+    BUSINESS = "Business & Industry"
+    EDUCATION = "Education & Training"
+    HEALTH = "Health Services"
+    LEGAL = "Legal & Public Safety"
+    LANDS = "Lands & Housing"
+    IMMIGRATION = "Immigration & Foreign Affairs"
+
+
+class ServiceProvider(str, PyEnum):
+    KRA = "Kenya Revenue Authority"
+    NTSA = "National Transport and Safety Authority"
+    DCI = "Directorate of Criminal Investigations"
+    BRS = "Business Registration Service"
+    HELB = "Higher Education Loans Board"
+    SHA = "Social Health Authority"
+    IMMIGRATION = "Department of Immigration"
+    LANDS = "Ministry of Lands"
+    CRS = "Civil Registration Services"
+
+
+class OrderStatus(str, PyEnum):
+    PENDING = "Pending"
+    PAID = "Paid"
+    IN_PROGRESS = "In Progress"
+    COMPLETED = "Completed"
+    CANCELLED = "Cancelled"
 
 
 # --- Shared Nested Models ---
@@ -40,37 +74,6 @@ class ContentSection(BaseModel):
 class BlogContent(BaseModel):
     introduction: str
     sections: List[ContentSection]
-
-
-# --- Service Schemas ---
-
-# from pydantic import BaseModel, Field, ConfigDict
-
-#
-# class ServiceBase(BaseModel):
-#     name: str
-#     slug: str
-#     provider: str
-#     category: ServiceCategory
-#
-#     # Add validation_alias to tell Pydantic where to look in the DB
-#     subCategory: str = Field(validation_alias="sub_category")
-#     icon: str
-#     description: str
-#     seoTitle: str = Field(validation_alias="seo_title")
-#     seoDescription: str = Field(validation_alias="seo_description")
-#     requirements: List[str]
-#     faqs: List[FAQ]
-#     pricing: Pricing
-#     estimatedTime: str = Field(validation_alias="estimated_time")
-#
-#     # This is the "magic" config that allows reading from SQLModel objects
-#     model_config = ConfigDict(
-#         alias_generator=to_camel,
-#         populate_by_name=True,  # Allows using 'sub_category'
-#         from_attributes=True,
-#         validate_by_alias=True,  # ADD THIS: Tells Pydantic to look for 'subCategory'
-#     )
 
 
 class ServiceBase(BaseModel):
@@ -119,25 +122,27 @@ class ServiceCreateSchema(ServiceBase):
 
 
 class ServiceUpdateSchema(BaseModel):
-    name: Optional[str]
-    slug: Optional[str]
-    provider: Optional[str]
-    category: Optional[Literal["Government", "Education", "Business"]]
-    subCategory: Optional[str]
-    icon: Optional[str]
-    description: Optional[str]
-    seoTitle: Optional[str] = Field(None, max_length=60)
-    seoDescription: Optional[str] = Field(None, max_length=160)
-    requirements: Optional[List[str]]
-    faqs: Optional[List[FAQ]]
-    pricing: Optional[Pricing]
-    estimatedTime: Optional[str]
-
-    # # This is the "magic" config that allows reading from SQLModel objects
-    # model_config = ConfigDict(
-    #     from_attributes=True,
-    #     populate_by_name=True
-    # )
+    name: Optional[str] = None
+    slug: Optional[str] = None
+    provider: Optional[ServiceProvider] = None
+    category: Optional[ServiceCategory] = None
+    sub_category: Optional[str] = Field(
+        default=None, alias="subCategory", validation_alias="sub_category"
+    )
+    icon: Optional[str] = None
+    description: Optional[str] = None
+    seo_title: Optional[str] = Field(
+        default=None, alias="seoTitle", validation_alias="seo_title"
+    )
+    seo_description: Optional[str] = Field(
+        default=None, alias="seoDescription", validation_alias="seo_description"
+    )
+    requirements: Optional[List[str]] = None
+    faqs: Optional[List[FAQ]] = None
+    pricing: Optional[Pricing] = None
+    estimated_time: Optional[str] = Field(
+        default=None, alias="estimatedTime", validation_alias="estimated_time"
+    )
 
 
 class ServiceRead(ServiceBase):

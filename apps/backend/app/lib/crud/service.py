@@ -1,4 +1,6 @@
 from typing import Sequence, Optional, List, Dict, Any
+
+from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text
 from sqlmodel import select, desc, update, or_, and_
@@ -7,6 +9,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from .base import BaseCRUD
 from app.lib.db.models import Service, ServiceCategory, ServiceProvider
 from app.lib.db.schemas import ServiceCreateSchema, ServiceUpdateSchema
+from ..utils.helpers import utc_now
 from ..utils.logger_setup import logger
 
 
@@ -18,7 +21,16 @@ class ServiceCRUD(BaseCRUD[Service, ServiceCreateSchema, ServiceUpdateSchema]):
     async def get_by_slug(self, db: AsyncSession, slug: str) -> Optional[Service]:
         """Fetch a single service by its slug."""
         try:
-            statement = select(self.model).where(self.model.slug == slug)
+            statement = (
+                select(self.model)
+                .where(
+                    and_(
+                        self.model.slug == slug,
+                        self.model.published.is_(True),
+                    )
+                )
+                .limit(1)
+            )
             result = await db.exec(statement)
             # ✅ SQLModel ScalarResult uses .one_or_none()
             return result.one_or_none()
@@ -141,13 +153,15 @@ class ServiceCRUD(BaseCRUD[Service, ServiceCreateSchema, ServiceUpdateSchema]):
             logger.error(f"Search suggestion error for query '{query}': {e}")
             return []
 
-    async def increment_popularity(self, db: AsyncSession, slug: str):
+    async def increment_popularity(
+        self, db: AsyncSession, slug: str, value: float = 0.5
+    ) -> None:
         """Atomically increment popularity score for a service."""
         try:
             statement = (
                 update(self.model)
                 .where(self.model.slug == slug)
-                .values(popularity_score=self.model.popularity_score + 0.5)
+                .values(popularity_score=self.model.popularity_score + value)
             )
             await db.exec(statement)
             await db.commit()
@@ -194,6 +208,61 @@ class ServiceCRUD(BaseCRUD[Service, ServiceCreateSchema, ServiceUpdateSchema]):
         )
         result = await db.exec(statement)
         return [{"n": r.name, "s": r.slug, "c": r.category} for r in result.all()]
+
+    async def delete_by_slug(self, db: AsyncSession, slug: str) -> None:
+        """Delete a service by its slug."""
+        #         we implement soft delete by setting available=False to preserve historical data and avoid FK issues
+        try:
+            statement = (
+                update(self.model)
+                .where(self.model.slug == slug)
+                .values(
+                    available=False,
+                    published=False,
+                    searchable=False,
+                    deleted_at=utc_now(),
+                )
+            )
+            await db.exec(statement)
+            await db.commit()
+            logger.info(f"Service soft-deleted (available=False): {slug}")
+        except SQLAlchemyError as e:
+            await db.rollback()
+            logger.error(f"Failed to delete service '{slug}': {e}")
+            raise
+
+    async def update_by_slug(
+        self, db: AsyncSession, slug: str, obj_in: ServiceUpdateSchema
+    ) -> Optional[Service]:
+        """Update a service by its slug and return the updated row."""
+
+        values = obj_in.model_dump(exclude_unset=True)
+        if not values:
+            logger.warning(f"No fields to update for service '{slug}'")
+            raise HTTPException(status_code=400, detail="No fields provided for update")
+
+        try:
+            statement = (
+                update(self.model)
+                .where(self.model.slug == slug)
+                .values(**values)
+                .returning(self.model)
+            )
+
+            result = await db.exec(statement)
+            updated = result.scalar_one_or_none()
+
+            if updated is None:
+                return None
+
+            await db.commit()
+            logger.info(f"Service updated: {updated.slug}")
+            return updated
+
+        except SQLAlchemyError as e:
+            await db.rollback()
+            logger.error(f"Failed to update service '{slug}': {e}")
+            raise
 
 
 service_crud = ServiceCRUD(Service)

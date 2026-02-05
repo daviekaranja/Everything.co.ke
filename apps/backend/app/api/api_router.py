@@ -8,4 +8,4 @@ api_router = APIRouter()
 # However, within the route files, you should ensure tags are applied for clean docs.
 
 api_router.include_router(orders.router, prefix="/orders", tags=["Orders"])
-api_router.include_router(services.router, prefix="/services", tags=["Services"])
+api_router.include_router(services.router, tags=["Services"], prefix="/services")

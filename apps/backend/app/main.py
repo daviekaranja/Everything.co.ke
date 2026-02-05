@@ -79,3 +79,11 @@ async def read_root():
 @app.get("/__test_crash__")
 async def test_crash():
     raise Exception("Database Connection Failed")
+
+
+@app.get("/seed_data")
+async def seed_data():
+    from app.lib.utils.seed_services import seed_services
+
+    await seed_services()
+    return {"detail": "Data seeding initiated"}

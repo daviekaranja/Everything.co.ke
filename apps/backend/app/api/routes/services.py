@@ -5,8 +5,8 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.api.deps import get_session
 from app.lib.crud.service import service_crud
 from app.lib.db.models import ServiceCategory, ServiceProvider
-from app.lib.db.schemas import ServiceRead
-
+from app.lib.db.schemas import ServiceRead, ServiceCreateSchema, ServiceUpdateSchema
+from app.lib.utils.logger_setup import logger
 
 router = APIRouter(
     responses={404: {"description": "Not found"}},
@@ -18,7 +18,9 @@ SHORT_CACHE = "public, s-maxage=600, stale-while-revalidate=30"
 
 
 @router.get(
-    "/", summary="Retrieve services with filters", response_model=List[ServiceRead]
+    "/filtered",
+    summary="Retrieve services with filters",
+    response_model=List[ServiceRead],
 )
 async def get_services(
     response: Response,
@@ -44,7 +46,12 @@ async def get_services(
         raise HTTPException(status_code=500, detail="Error fetching services list")
 
 
-@router.get("/by-slug/{slug}", summary="Get detail by slug", response_model=ServiceRead)
+@router.get(
+    "/by-slug/{slug}",
+    summary="Get detail by slug",
+    response_model=ServiceRead,
+    status_code=200,
+)
 async def get_service_by_slug(slug: str, db: AsyncSession = Depends(get_session)):
     """
     Fetch full details for a single service using its unique slug.
@@ -112,3 +119,38 @@ async def get_filters_manifest(
     """
     response.headers["Cache-Control"] = LONG_CACHE
     return await service_crud.get_filters_manifest(db)
+
+
+@router.post("/register", status_code=201)
+async def register_service(
+    db_obj: ServiceCreateSchema, db: AsyncSession = Depends(get_session)
+):
+    new = await service_crud.create_service(db=db, obj_in=db_obj)
+    # await db.commit()
+    return new
+
+
+@router.post("/increment-popularity/{slug}", status_code=204)
+async def increment_service_popularity(
+    slug: str, db: AsyncSession = Depends(get_session)
+):
+    await service_crud.increment_popularity(db, slug)
+    # await db.commit()
+    return
+
+
+@router.put("/update/{slug}", status_code=200)
+async def update_service(
+    slug: str, db_obj: ServiceUpdateSchema, db: AsyncSession = Depends(get_session)
+):
+    updated = await service_crud.update_by_slug(db, slug, db_obj)
+    # await db.commit()
+    logger.debug(f"Service with slug '{slug}' updated successfully.")
+    return updated
+
+
+@router.delete("/delete/{slug}", status_code=204)
+async def delete_service(slug: str, db: AsyncSession = Depends(get_session)):
+    await service_crud.delete_by_slug(db, slug)
+    # await db.commit()
+    return
