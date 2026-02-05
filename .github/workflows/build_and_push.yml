@@ -37,7 +37,6 @@
 #       VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
 #       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
 
-
 # name: Build, Push & Deploy Everything API
 
 # on:
@@ -95,7 +94,64 @@
 #       VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
 #       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
 
+# name: Build, Push & Deploy Everything API
 
+# on:
+#   push:
+#     branches:
+#       - master
+#       - dev
+#     tags:
+#       - "v*"
+
+# jobs:
+#   # --- JOB 0: Run Tests ---
+#   test-api:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+
+#       - name: Set up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: "3.12"
+
+#       - name: Install dependencies
+#         working-directory: ./apps/backend
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install -r requirements.txt
+
+#       - name: Run backend tests
+#         working-directory: ./apps/backend
+#         run: |
+#           # Ensure 'app' is importable
+#           export PYTHONPATH=$(pwd)
+#           pytest --maxfail=1 --disable-warnings -q
+
+#   # --- JOB 1: Build the Image ---
+#   build-api:
+#     needs: test-api
+#     uses: daviekaranja/workflows/.github/workflows/docker-build-push.yml@master
+#     with:
+#       image_name: "everything-api"
+#       build_context: "."
+#       dockerfile_path: "./apps/backend/Dockerfile"
+#     secrets: inherit
+
+#   # --- JOB 2: Deploy to VPS ---
+#   deploy-api:
+#     needs: build-api
+#     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+#     uses: daviekaranja/workflows/.github/workflows/reusable-deploy.yml@master
+#     with:
+#       target_directory: "docker_stack/everythingke"
+#       image_tag: ${{ github.ref_name }}
+#     secrets:
+#       VPS_HOST: ${{ secrets.VPS_HOST }}
+#       VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+#       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
 
 name: Build, Push & Deploy Everything API
 
@@ -109,33 +165,46 @@ on:
 
 jobs:
   # --- JOB 0: Run Tests ---
-  test-api:
+  test_api:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # Updated to v4 for better performance
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip" # Automated caching of dependencies
 
       - name: Install dependencies
         working-directory: ./apps/backend
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          # Ensure pytest-mock is present if not in requirements.txt
+          pip install pytest-mock
 
       - name: Run backend tests
         working-directory: ./apps/backend
+        env:
+          # Critical: Set PYTHONPATH to the root of the backend directory
+          # so that 'import app' works correctly.
+          PYTHONPATH: ${{ github.workspace }}/apps/backend
+          ENVIRONMENT: testing
+          # Add any required dummy secrets for Pydantic settings validation
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_HOST: localhost
+          POSTGRES_DB: test_db
         run: |
-          # Ensure 'app' is importable
-          export PYTHONPATH=$(pwd)
-          pytest --maxfail=1 --disable-warnings -q
+          pytest --maxfail=1 --disable-warnings
 
   # --- JOB 1: Build the Image ---
-  build-api:
-    needs: test-api
+  build_api:
+    needs: test_api
+    # Only build if tests pass.
+    # Logic is handled by your reusable workflow.
     uses: daviekaranja/workflows/.github/workflows/docker-build-push.yml@master
     with:
       image_name: "everything-api"
@@ -144,8 +213,9 @@ jobs:
     secrets: inherit
 
   # --- JOB 2: Deploy to VPS ---
-  deploy-api:
-    needs: build-api
+  deploy_api:
+    needs: build_api
+    # Ensure we only deploy from master branch or version tags
     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
     uses: daviekaranja/workflows/.github/workflows/reusable-deploy.yml@master
     with:
