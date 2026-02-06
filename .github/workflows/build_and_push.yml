@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - dev
     tags:
       - "v*"
 
@@ -13,7 +12,7 @@ jobs:
   build-api:
     uses: daviekaranja/workflows/.github/workflows/docker-build-push.yml@master
     with:
-      image_name: "everything-api"
+      image_name: "everythingke"
       build_context: "."
       dockerfile_path: "./apps/backend/Dockerfile"
     secrets: inherit
