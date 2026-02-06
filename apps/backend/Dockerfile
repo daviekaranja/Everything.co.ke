@@ -70,7 +70,7 @@ RUN pip install --no-cache-dir -r requirements.txt && pip install gunicorn
 COPY apps/backend/app ./app
 COPY apps/backend/alembic ./alembic
 COPY apps/backend/alembic.ini .
-# COPY apps/backend/main.py .
+COPY apps/backend/main.py .
 COPY apps/backend/entrypoint.sh .
 
 # Crucial: Ensure the 'app' directory is in the python path
