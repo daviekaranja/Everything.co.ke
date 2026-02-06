@@ -1,0 +1,62 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: everything_db
+    env_file: .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - traefik
+    healthcheck:
+      # Using $$ to escape the variable for shell execution within the container
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: daviekaranja254/everything-api:${IMAGE_TAG}
+    container_name: everything_api
+    env_file: .env
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.everything-api.rule=Host(`api.everything.co.ke`)"
+      - "traefik.http.routers.everything-api.entrypoints=websecure"
+      - "traefik.http.routers.everything-api.tls.certresolver=myresolver"
+    # New Healthcheck for your FastAPI app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 15s # Wait for lifespan DB check to pass before polling
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  adminer:
+    image: adminer:latest
+    container_name: everything_adminer
+    restart: unless-stopped
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.everything.co.ke`)"
+      - "traefik.http.routers.adminer.entrypoints=websecure"
+      - "traefik.http.routers.adminer.tls.certresolver=myresolver"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+
+networks:
+  traefik:
+    external: true

@@ -1,3 +1,43 @@
+# name: Build, Push & Deploy Everything API
+
+# on:
+#   push:
+#     branches:
+#       - master
+#       - dev
+#     tags:
+#       - "v*"
+#     # paths:
+#     #   - "apps/backend/**"
+#     #   - "packages/**"
+#     #   - ".github/workflows/build_and_deploy.yml"
+
+# jobs:
+#   # --- JOB 1: Build the Image ---
+#   build-api:
+#     uses: daviekaranja/workflows/.github/workflows/docker-build-push.yml@master
+#     with:
+#       image_name: "everything-api"
+#       build_context: "."
+#       # FIXED: Added missing opening quote and corrected path
+#       dockerfile_path: "./apps/backend/Dockerfile"
+#     secrets: inherit
+
+#   # --- JOB 2: Deploy to VPS ---
+#   deploy-api:
+#     needs: build-api
+#     # Logic: Only deploy on master branch OR any tag starting with 'v'
+#     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
+#     uses: daviekaranja/workflows/.github/workflows/reusable-deploy.yml@master
+#     with:
+#       target_directory: "/home/davie/docker_stack/everythingke"
+#       image_tag: ${{ github.ref_name }}
+#     secrets:
+#       VPS_HOST: ${{ secrets.VPS_HOST }}
+#       VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+#       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+
+
 name: Build, Push & Deploy Everything API
 
 on:
@@ -7,10 +47,6 @@ on:
       - dev
     tags:
       - "v*"
-    # paths:
-    #   - "apps/backend/**"
-    #   - "packages/**"
-    #   - ".github/workflows/build_and_deploy.yml"
 
 jobs:
   # --- JOB 1: Build the Image ---
@@ -19,20 +55,46 @@ jobs:
     with:
       image_name: "everything-api"
       build_context: "."
-      # FIXED: Added missing opening quote and corrected path
       dockerfile_path: "./apps/backend/Dockerfile"
     secrets: inherit
 
   # --- JOB 2: Deploy to VPS ---
   deploy-api:
     needs: build-api
-    # Logic: Only deploy on master branch OR any tag starting with 'v'
     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
     uses: daviekaranja/workflows/.github/workflows/reusable-deploy.yml@master
     with:
+      # Corrected directory based on our troubleshooting
       target_directory: "/home/davie/docker_stack/everythingke"
       image_tag: ${{ github.ref_name }}
     secrets:
       VPS_HOST: ${{ secrets.VPS_HOST }}
       VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+
+  # --- JOB 3: Public Smoke Test ---
+  smoke-test:
+    needs: deploy-api
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Public Health Endpoint
+        run: |
+          echo "Verifying public API availability at api.everything.co.ke..."
+
+          # Retry 5 times with 10s delay to allow Traefik/DNS to settle
+          SUCCESS=false
+          for i in {1..5}; do
+            # -f fails on 4xx/5xx, -s is silent, -v shows headers if needed
+            if curl -f -s https://api.everything.co.ke/health; then
+              echo "✅ Smoke test passed: API is reachable and healthy!"
+              SUCCESS=true
+              break
+            fi
+            echo "Attempt $i failed. Waiting 10 seconds..."
+            sleep 10
+          done
+
+          if [ "$SUCCESS" = false ]; then
+            echo "❌ Smoke test failed: API is not reachable publicly."
+            exit 1
+          fi
