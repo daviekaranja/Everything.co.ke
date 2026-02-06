@@ -4,19 +4,6 @@ from app.core.config import settings
 
 
 @pytest.mark.asyncio
-async def test_read_root_health_check(client: AsyncClient):
-    """
-    Verifies the root endpoint returns the correct app status and settings.
-    """
-    response = await client.get("/")
-    assert response.status_code == 200
-
-    data = response.json()
-    assert data["status"] == "online"
-    assert data["app_name"] == settings.app_name
-
-
-@pytest.mark.asyncio
 async def test_cors_headers_middleware(client: AsyncClient):
     """
     Verifies that CORSMiddleware is active.
@@ -86,3 +73,22 @@ async def test_seed_data_endpoint(client: AsyncClient):
     response = await client.get("/seed_data")
     assert response.status_code == 200
     assert response.json()["detail"] == "Data seeding initiated"
+
+
+@pytest.mark.asyncio
+async def test_health_check_endpoint(client: AsyncClient):
+    """
+    Verifies the deep health check endpoint.
+    Ensures API is up and database connectivity works.
+    """
+    response = await client.get("/health")
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["status"] == "healthy"
+    assert data["database"] == "connected"
+
+    # Version should exist, but don't hard-fail on exact value
+    assert "version" in data
+    assert isinstance(data["version"], str)
