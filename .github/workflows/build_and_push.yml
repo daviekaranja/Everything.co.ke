@@ -12,8 +12,8 @@ jobs:
   build-api:
     uses: daviekaranja/workflows/.github/workflows/docker-build-push.yml@master
     with:
-      image_name: "everything-api"
-      build_context: "./apps/backend"
+      image_name: "everythingke"
+      build_context: "."
       dockerfile_path: "./apps/backend/Dockerfile"
     secrets: inherit
 
