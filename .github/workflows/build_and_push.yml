@@ -1,113 +1,38 @@
-# name: Build, Push & Deploy Everything API
-
-# on:
-#   push:
-#     branches:
-#       - master
-#       - dev
-#     tags:
-#       - "v*"
-
-# jobs:
-#   # --- JOB 1: Build the Image ---
-#   build-api:
-#     uses: daviekaranja/workflows/.github/workflows/docker-build-push.yml@master
-#     with:
-#       image_name: "everything-api"
-#       build_context: "."
-#       dockerfile_path: "./apps/backend/Dockerfile"
-#     secrets: inherit
-
-#   # --- JOB 2: Deploy to VPS ---
-#   deploy-api:
-#     needs: build-api
-#     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
-#     uses: daviekaranja/workflows/.github/workflows/reusable-deploy.yml@master
-#     with:
-#       # Corrected directory based on our troubleshooting
-#       target_directory: "/home/davie/docker_stack/everythingke"
-#       image_tag: ${{ github.ref_name }}
-#     secrets:
-#       VPS_HOST: ${{ secrets.VPS_HOST }}
-#       VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
-#       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-
-#   # --- JOB 3: Public Smoke Test ---
-#   smoke-test:
-#     needs: deploy-api
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Verify Public Health Endpoint
-#         run: |
-#           echo "Verifying public API availability at api.everything.co.ke..."
-
-#           # Retry 5 times with 10s delay to allow Traefik/DNS to settle
-#           SUCCESS=false
-#           for i in {1..5}; do
-#             # -f fails on 4xx/5xx, -s is silent, -v shows headers if needed
-#             if curl -f -s https://api.everything.co.ke/health; then
-#               echo "✅ Smoke test passed: API is reachable and healthy!"
-#               SUCCESS=true
-#               break
-#             fi
-#             echo "Attempt $i failed. Waiting 10 seconds..."
-#             sleep 10
-#           done
-
-#           if [ "$SUCCESS" = false ]; then
-#             echo "❌ Smoke test failed: API is not reachable publicly."
-#             exit 1
-#           fi
-
-
-
 name: Build, Push & Deploy Everything API
 
 on:
   push:
-    branches: [master]
-    tags: ["v*"]
+    branches:
+      - master
+      - dev
+    tags:
+      - "v*"
 
 jobs:
-  # --- JOB 1: Normalize Tagging ---
-  # Ensures 'v0.0.3' becomes '0.0.3' so Docker Hub finds the manifest
-  prep-tags:
-    runs-on: ubuntu-latest
-    outputs:
-      normalized_tag: ${{ steps.tag_logic.outputs.tag }}
-    steps:
-      - id: tag_logic
-        run: |
-          RAW_REF="${{ github.ref_name }}"
-          # Strip 'v' prefix if it exists, else use raw ref (like 'master' or 'dev')
-          CLEAN_TAG=$(echo $RAW_REF | sed 's/^v//')
-          echo "tag=$CLEAN_TAG" >> $GITHUB_OUTPUT
-
-  # --- JOB 2: Build the Image ---
+  # --- JOB 1: Build the Image ---
   build-api:
-    needs: prep-tags
     uses: daviekaranja/workflows/.github/workflows/docker-build-push.yml@master
     with:
       image_name: "everything-api"
-      image_tag: ${{ needs.prep-tags.outputs.normalized_tag }}
       build_context: "."
       dockerfile_path: "./apps/backend/Dockerfile"
     secrets: inherit
 
-  # --- JOB 3: Deploy to VPS ---
+  # --- JOB 2: Deploy to VPS ---
   deploy-api:
-    needs: [prep-tags, build-api]
+    needs: build-api
     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
     uses: daviekaranja/workflows/.github/workflows/reusable-deploy.yml@master
     with:
+      # Corrected directory based on our troubleshooting
       target_directory: "/home/davie/docker_stack/everythingke"
-      image_tag: ${{ needs.prep-tags.outputs.normalized_tag }}
+      image_tag: ${{ github.ref_name }}
     secrets:
       VPS_HOST: ${{ secrets.VPS_HOST }}
       VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
 
-  # --- JOB 4: Public Smoke Test ---
+  # --- JOB 3: Public Smoke Test ---
   smoke-test:
     needs: deploy-api
     runs-on: ubuntu-latest
@@ -115,14 +40,21 @@ jobs:
       - name: Verify Public Health Endpoint
         run: |
           echo "Verifying public API availability at api.everything.co.ke..."
+
+          # Retry 5 times with 10s delay to allow Traefik/DNS to settle
           SUCCESS=false
-          for i in {1..6}; do
+          for i in {1..5}; do
+            # -f fails on 4xx/5xx, -s is silent, -v shows headers if needed
             if curl -f -s https://api.everything.co.ke/health; then
-              echo "✅ Smoke test passed!"
+              echo "✅ Smoke test passed: API is reachable and healthy!"
               SUCCESS=true
               break
             fi
-            echo "Attempt $i failed (Traefik/DNS settling...). Retrying in 10s..."
+            echo "Attempt $i failed. Waiting 10 seconds..."
             sleep 10
           done
-          if [ "$SUCCESS" = false ]; then exit 1; fi
+
+          if [ "$SUCCESS" = false ]; then
+            echo "❌ Smoke test failed: API is not reachable publicly."
+            exit 1
+          fi
