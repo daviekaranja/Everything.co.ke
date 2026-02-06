@@ -30,7 +30,7 @@ jobs:
     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v')
     uses: daviekaranja/workflows/.github/workflows/reusable-deploy.yml@master
     with:
-      target_directory: "docker_stack/everythingke"
+      target_directory: "/home/davie/docker_stack/everythingke"
       image_tag: ${{ github.ref_name }}
     secrets:
       VPS_HOST: ${{ secrets.VPS_HOST }}
