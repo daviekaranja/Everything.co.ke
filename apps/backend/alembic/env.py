@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, pool
 from sqlmodel import SQLModel
 # import models to ensure they are registered with SQLModel.metadata
 
-from app.lib.db.models import User, BlogPost, Service, Order, Authors  # noqa: F401
+from app.lib.db.models import User, BlogPost, Service, Order, Authors, MpesaTransaction  # noqa: F401
 
 # explicitly import metadata
 

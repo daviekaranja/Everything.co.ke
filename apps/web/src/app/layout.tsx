@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "../lib/components/navbar";
+import { Navbar } from "@/lib/components/navbar/Navbar";
 import { Footer } from "../lib/components/footer";
 import { ClientProviders } from "@/lib/providers";
 import Script from "next/script";
@@ -9,10 +9,11 @@ import Script from "next/script";
 /* -----------------------------------------------------
    Font setup
 ----------------------------------------------------- */
+// 1. Initialize the font and assign it to a CSS variable
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-sans",
   display: "swap",
+  variable: "--font-inter", // Must match var(--font-inter) in your globals.css
 });
 
 /* -----------------------------------------------------
@@ -21,23 +22,18 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://everything.co.ke"),
-
   title: {
-    default: "Everything.co.ke — Trusted Online Cyber Services in Kenya",
     template: "%s | Everything.co.ke",
+    default:
+      "Everything.co.ke | Professional Online Cyber & Portal Assistance Kenya",
   },
-
   description:
-    "Kenya's reliable partner for KRA, NTSA, HELB, and eCitizen services. We provide fast, accurate assistance for passport applications and document processing.",
-
-  // Canonical prevents duplicate content issues
+    "Independent professional assistance for eCitizen, KRA, NTSA, and HELB portals. Fast, reliable online cyber services for Kenyans.",
   alternates: {
     canonical: "https://everything.co.ke",
   },
-
   authors: [{ name: "Everything.co.ke" }],
-  category: "Government & Business Services",
-
+  category: "Business Services", // Changed from Government to Business
   robots: {
     index: true,
     follow: true,
@@ -49,38 +45,40 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
-
   openGraph: {
     type: "website",
     locale: "en_KE",
     url: "https://everything.co.ke",
     siteName: "Everything.co.ke",
-    title: "Everything.co.ke — Online Cyber Services in Kenya",
+    title: "Everything.co.ke | Professional Online Cyber Services Kenya",
     description:
-      "Get professional assistance with KRA, NTSA, eCitizen, HELB, and more. Fast and reliable services across Kenya.",
+      "Get expert help with your KRA, NTSA, and eCitizen applications. We are an independent service provider helping you navigate digital portals.",
     images: [
       {
         url: "/og-image.jpeg",
         width: 1200,
         height: 630,
-        alt: "Everything.co.ke Online Cyber Services Kenya",
+        alt: "Everything.co.ke - Digital Assistant Services Kenya",
       },
     ],
   },
-
   twitter: {
     card: "summary_large_image",
-    title: "Everything.co.ke — Online Cyber Services in Kenya",
+    title: "Everything.co.ke | Online Cyber Services Kenya",
     description:
-      "Fast and reliable online cyber services in Kenya: KRA, NTSA, HELB, eCitizen, and more.",
+      "Fast and reliable assistance for KRA, NTSA, HELB, and eCitizen portals.",
     images: ["/og-image.jpeg"],
   },
-
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png", // Recommended for mobile SEO
+    apple: "/apple-touch-icon.png",
   },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 /* -----------------------------------------------------
@@ -92,18 +90,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable}`}>
       <head>
         {/* Verification Meta Tag */}
         <meta name="google-adsense-account" content="ca-pub-7345060853696984" />
-
-        {/* The Library: Loads the ad engine, but doesn't place ads yet */}
-        {/* <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7345060853696984"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        /> */}
 
         {process.env.NODE_ENV === "production" && (
           <Script
@@ -114,7 +104,7 @@ export default function RootLayout({
         )}
       </head>
 
-      <body className="">
+      <body className="min-h-screen flex flex-col bg-brand-bg dark:bg-brand-dark text-text-main">
         <ClientProviders>
           <Navbar />
           <main className="flex-1">{children}</main>

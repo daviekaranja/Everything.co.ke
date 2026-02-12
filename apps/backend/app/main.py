@@ -12,6 +12,8 @@ from app.api.api_router import api_router
 from app.api.deps import (
     get_session,
 )  # Assuming engine is exported from deps or db config
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 
 @asynccontextmanager
@@ -81,6 +83,17 @@ def create_application() -> FastAPI:
 app = create_application()
 
 
+# Mount the static directory
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+# Optional: Add a specific route for the default '/favicon.ico' request
+# Browsers automatically look for this path
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse("static/favicon.ico")  # Replace with your file name
+
+
 @app.get("/__test_crash__")
 async def test_crash():
     raise Exception("Database Connection Failed")
@@ -111,3 +124,12 @@ async def seed_data():
 
     await seed_services()
     return {"detail": "Data seeding initiated"}
+
+
+@app.get("/openapi.json", include_in_schema=False)
+async def get_openapi_endpoint():
+    """
+    Returns the current OpenAPI schema for frontend code generation.
+    'include_in_schema=False' prevents this from showing up in Swagger.
+    """
+    return JSONResponse(content=app.openapi())

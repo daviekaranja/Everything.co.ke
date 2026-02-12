@@ -7,7 +7,12 @@ from sqlalchemy import DateTime, func, text, Enum, JSON
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
 from sqlmodel import Field, SQLModel, Column, Relationship, Index
 
-from app.lib.db.schemas import OrderStatus, ServiceProvider, ServiceCategory
+from app.lib.db.schemas import (
+    OrderStatus,
+    ServiceProvider,
+    ServiceCategory,
+    MpesaTransactionBase,
+)
 
 # --- DIALECT ADAPTATION ---
 # This ensures SQLite (testing) uses JSON and Postgres (prod) uses JSONB
@@ -172,3 +177,11 @@ class Authors(BaseMixin, table=True):
     )
 
     posts: List["BlogPost"] = Relationship(back_populates="author")
+
+
+class MpesaTransaction(BaseMixin, MpesaTransactionBase, table=True):
+    __tablename__ = "transactions"  # ← good, different from class name
+
+    pass
+    # Do NOT redeclare created_at / updated_at here
+    # They come from BaseMixin

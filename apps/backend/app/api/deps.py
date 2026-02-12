@@ -1,21 +1,8 @@
-# ---------------------------------------------------------
-# FastAPI dependency
-# ---------------------------------------------------------
-# from typing import AsyncGenerator
-#
-# from sqlmodel.ext.asyncio.session import AsyncSession
-#
-# from app.lib.db.session import AsyncSessionLocal
-#
-#
-# async def get_session() -> AsyncGenerator[AsyncSession, None]:
-#     async with AsyncSessionLocal() as session:
-#         yield session
-
-
 from typing import AsyncGenerator
 from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel.ext.asyncio.session import AsyncSession
+
+from app.core.config import MpesaSettings
 from app.lib.db.session import AsyncSessionLocal
 from app.lib.utils.logger_setup import logger
 
@@ -37,3 +24,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
             raise
         finally:
             await session.close()
+
+
+def get_mpesa_config():
+    return MpesaSettings()

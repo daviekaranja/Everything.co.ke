@@ -1,49 +1,68 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { services } from "@/lib/data/services";
-import GlobalSearch from "@/lib/components/services/searchBar";
-import Link from "next/link"; // Added for navigation
+import Link from "next/link";
+import axiosClient from "@/lib/axios-client";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
+/**
+ * SEO: Fetches service metadata from the API
+ */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
-  const service = services.find((s) => s.slug === resolvedParams.slug);
-
-  if (!service) return { title: "Service Not Found" };
-
-  return {
-    title: service.seoTitle,
-    description: service.seoDescription,
-    openGraph: {
-      title: service.seoTitle,
+  try {
+    const { data: service } = await axiosClient.get(
+      `/services/by-slug/${resolvedParams.slug}`,
+    );
+    return {
+      title: service.seoTitle || `${service.name} | Everything.co.ke`,
       description: service.seoDescription,
-      images: [`/api/og?title=${service.name}`],
-    },
-  };
+    };
+  } catch (err) {
+    return { title: "Service Not Found" };
+  }
 }
 
+/**
+ * Static Generation: Tells Next.js which slugs to pre-render
+ */
 export async function generateStaticParams() {
-  return services.map((service) => ({
-    slug: service.slug,
-  }));
+  try {
+    const { data: slugs } = await axiosClient.get("/services/published-slugs");
+    return slugs.map((slug: string) => ({
+      slug: slug,
+    }));
+  } catch (error) {
+    console.error("Failed to fetch static params:", error);
+    return [];
+  }
 }
 
 export default async function ServiceDetailPage({ params }: Props) {
   const resolvedParams = await params;
-  const service = services.find((s) => s.slug === resolvedParams.slug);
+  let service;
 
-  if (!service) notFound();
+  try {
+    // Transitioning from local array to FastAPI endpoint
+    const response = await axiosClient.get(
+      `/services/by-slug/${resolvedParams.slug}`,
+    );
+    service = response.data;
+  } catch (error) {
+    console.error("Error fetching service detail:", error);
+    return notFound();
+  }
 
+  // Structured Data for Google Rich Results
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
     name: service.name,
-    description: service.seoDescription,
+    description: service.seoDescription || service.description,
     provider: { "@type": "LocalBusiness", name: "Everything.co.ke" },
-    mainEntity: service.faqs.map((faq) => ({
+    mainEntity: service.faqs?.map((faq: any) => ({
       "@type": "Question",
       name: faq.q,
       acceptedAnswer: { "@type": "Answer", text: faq.a },
@@ -59,16 +78,12 @@ export default async function ServiceDetailPage({ params }: Props) {
 
       <header className="bg-brand-dark pt-12 pb-24 px-6">
         <div className="max-w-5xl mx-auto">
-          <div className="mb-10 max-w-2xl">
-            <GlobalSearch />
-          </div>
-
           <div className="flex flex-wrap gap-3 mb-6">
             <span className="bg-accent/20 text-accent text-[10px] font-black uppercase px-3 py-1 rounded-full border border-accent/30">
               {service.provider}
             </span>
             <span className="bg-white/10 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full border border-white/20">
-              {service.subCategory}
+              {service.subCategory || service.category}
             </span>
           </div>
 
@@ -91,7 +106,7 @@ export default async function ServiceDetailPage({ params }: Props) {
               What You Need
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              {service.requirements.map((req, i) => (
+              {service.requirements?.map((req: string, i: number) => (
                 <div
                   key={i}
                   className="flex items-start gap-3 p-4 bg-brand-bg rounded-2xl border border-card-border group hover:border-accent/30 transition-colors"
@@ -105,27 +120,29 @@ export default async function ServiceDetailPage({ params }: Props) {
             </div>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-black text-text-main px-4">
-              Common Questions
-            </h2>
-            {service.faqs.map((faq, i) => (
-              <details
-                key={i}
-                className="group bg-white dark:bg-slate-900 border border-card-border rounded-3xl overflow-hidden cursor-pointer"
-              >
-                <summary className="p-6 font-black text-text-main flex justify-between items-center list-none group-open:text-accent transition-colors">
-                  {faq.q}
-                  <span className="group-open:rotate-180 transition-transform duration-300">
-                    ↓
-                  </span>
-                </summary>
-                <div className="px-6 pb-6 text-text-muted text-sm leading-relaxed animate-in fade-in slide-in-from-top-2">
-                  {faq.a}
-                </div>
-              </details>
-            ))}
-          </section>
+          {service.faqs && service.faqs.length > 0 && (
+            <section className="space-y-4">
+              <h2 className="text-2xl font-black text-text-main px-4">
+                Common Questions
+              </h2>
+              {service.faqs.map((faq: any, i: number) => (
+                <details
+                  key={i}
+                  className="group bg-white dark:bg-slate-900 border border-card-border rounded-3xl overflow-hidden cursor-pointer"
+                >
+                  <summary className="p-6 font-black text-text-main flex justify-between items-center list-none group-open:text-accent transition-colors">
+                    {faq.q}
+                    <span className="group-open:rotate-180 transition-transform duration-300">
+                      ↓
+                    </span>
+                  </summary>
+                  <div className="px-6 pb-6 text-text-muted text-sm leading-relaxed animate-in fade-in slide-in-from-top-2">
+                    {faq.a}
+                  </div>
+                </details>
+              ))}
+            </section>
+          )}
         </div>
 
         <aside className="lg:col-span-1">
@@ -138,13 +155,13 @@ export default async function ServiceDetailPage({ params }: Props) {
                 <div className="flex justify-between text-sm font-bold">
                   <span className="text-text-muted italic">Gov. Fee</span>
                   <span className="text-text-main">
-                    KES {service.pricing.governmentFee}
+                    KES {Number(service.pricing.governmentFee).toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm font-bold">
                   <span className="text-text-muted">Service Fee</span>
                   <span className="text-text-main">
-                    KES {service.pricing.serviceFee}
+                    KES {Number(service.pricing.serviceFee).toLocaleString()}
                   </span>
                 </div>
                 <div className="pt-4 border-t border-dashed border-card-border flex justify-between items-end">
@@ -156,13 +173,12 @@ export default async function ServiceDetailPage({ params }: Props) {
                       Inclusive of VAT
                     </span>
                     <span className="text-3xl font-black text-accent tracking-tighter">
-                      KES {service.pricing.total}
+                      KES {Number(service.pricing.total).toLocaleString()}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* UPDATED BUTTON: Links to multi-step checkout with slug query */}
               <Link
                 href={`/checkout/personal-details?service=${service.slug}`}
                 className="w-full bg-accent text-white py-5 rounded-2xl font-black shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center text-center"
@@ -178,7 +194,6 @@ export default async function ServiceDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* LIVE SESSION TRUST CARD */}
             <div className="bg-brand-dark rounded-3xl p-6 text-white border border-white/10">
               <h4 className="text-xs font-black uppercase tracking-widest text-accent mb-2">
                 Live Session Required

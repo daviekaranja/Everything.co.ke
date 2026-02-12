@@ -98,12 +98,31 @@ class ServiceCRUD(BaseCRUD[Service, ServiceCreateSchema, ServiceUpdateSchema]):
     async def get_filters_manifest(self, db: AsyncSession) -> Dict[str, List[str]]:
         """Maps Categories to available Providers for the UI filter sidebar."""
         statement = select(self.model.category, self.model.provider).distinct()
+        # statement = select(self.model.provider, self.model.category).distinct()
         result = await db.exec(statement)
 
         manifest: Dict[str, List[str]] = {}
         for cat, prov in result.all():
             manifest.setdefault(cat, []).append(prov)
         return manifest
+
+    async def services_by_provider(
+        self,
+        db: AsyncSession,
+        provider: ServiceProvider,
+        limit: int = 50,
+        skip: int = 50,
+    ) -> Sequence[Service]:
+        """Maps Categories to available Providers for the UI filter sidebar."""
+        # statement = select(self.model.category, self.model.provider).distinct()
+        statement = select(self.model).where(self.model.provider == provider).distinct()
+        # if provider:
+        #     statement = statement.where(self.model.provider == provider)
+        #
+        # statement = statement.offset(skip).limit(limit).order_by(self.model.name)
+
+        result = await db.exec(statement)
+        return result.all()
 
     async def get_search_suggestions(
         self, db: AsyncSession, query: str, limit: int = 6

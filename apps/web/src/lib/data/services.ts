@@ -1,3 +1,6 @@
+import { zServiceRead } from "../types/api/zod.gen";
+import { z } from "zod";
+
 export interface Service {
   name: string;
   slug: string;
@@ -17,6 +20,8 @@ export interface Service {
   };
   estimatedTime: string;
 }
+
+export type ServiceRead = z.infer<typeof zServiceRead>;
 
 
 export interface BlogPost {
