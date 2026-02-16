@@ -5,33 +5,22 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-import { Service } from "@/lib/data/services";
-// import { processOrderAction } from "@/app/actions/orders"; // Importing our DB action
-import { processOrderAction } from "@/lib/actions/orders";
+import axiosClient from "@/lib/axios-client";
+import { Input } from "../ui/Input";
 import {
-  User,
-  Mail,
-  Phone,
-  MessageSquare,
-  ChevronRight,
-  Loader2,
   AlertCircle,
-  Lock,
 } from "lucide-react";
+import { zUserCreateSchema } from "@/lib/types/api/zod.gen";
+import { ServiceRead } from "@/lib/types/api";
+import { Button } from "../ui/button";
 
-const formSchema = z.object({
-  name: z.string().min(3, "Full legal name as per ID is required"),
-  email: z.string().email("Please provide a valid email"),
-  phone: z
-    .string()
-    .regex(/^(?:254|\+254|0)?(7|1)[0-9]{8}$/, "Enter a valid phone number"),
-  contactMethod: z.enum(["whatsapp", "call", "email"]),
-});
+// Matching your API schema exactly
 
-type FormData = z.infer<typeof formSchema>;
+type FormData = z.infer<typeof zUserCreateSchema>;
 
-export default function CheckoutForm({ service }: { service: Service }) {
+export default function CheckoutForm({ service }: { service: ServiceRead }) {
   const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
   const router = useRouter();
 
   const {
@@ -40,173 +29,103 @@ export default function CheckoutForm({ service }: { service: Service }) {
     control,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(zUserCreateSchema),
     defaultValues: { contactMethod: "whatsapp" },
   });
 
-  const selectedMethod = useWatch({ control, name: "contactMethod" });
-
   const onSubmit = async (data: FormData) => {
     setLoading(true);
+    setServerError(null);
 
     try {
-      // 1. Call the Server Action to save User + Order to SQLite
-      const result = await processOrderAction({
-        ...data,
-        serviceName: service.name,
-        amount: parseFloat(service.pricing.total.toString()),
-      });
+      // POST to your FastAPI endpoint
+      const response = await axiosClient.post("/users/register", data);
 
-      if (result.success) {
-        // 2. Success! Redirect to the STK Push Awaiting Page
-        // We pass the orderId so the next page knows which transaction to track
-        router.push(`/checkout/stk-push?orderId=${result.orderId}`);
-      } else {
-        // Handle database or logic errors
-        alert(result.message || "Failed to process request. Please try again.");
-        setLoading(false);
+      if (response.data?.id || response.data?.success) {
+        // Redirect to M-Pesa tracking page
+        const orderData = {
+          userId: response.data.id,
+          serviceId: service.id,
+          name: service.name,
+          amount: service.pricing.serviceFee,
+        };
+
+        const { data } = await axiosClient.post("/orders/create", orderData);
+        if (!data) {
+          throw new Error("Failed to create order");
+        }
+
+        router.push(
+          `/checkout/stk-push?serviceId=${service.id}&orderId=${data.id}&serviceName=${data.name}&amount=${data.amount}`,
+        );
       }
-    } catch (error) {
-      console.error("Submission Error:", error);
+    } catch (error: any) {
+      setServerError(
+        error.response?.data?.detail || "Connection failed. Please try again.",
+      );
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
-          <header className="mb-8 flex justify-between items-start">
-            <div>
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                Personal <span className="text-accent">Details</span>
-              </h2>
-              <p className="text-slate-500 text-sm mt-1">
-                Step 1: Secure your application profile.
-              </p>
-            </div>
-            <div className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-green-100 dark:border-green-900/30">
-              <Lock size={12} />
-              <span className="text-[10px] font-black uppercase tracking-widest">
-                Secure SSL
-              </span>
-            </div>
-          </header>
+    <div className="w-full p-4 shadow-sm bg-white">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <section id="fullname">
+          <p className="text-h3 text-accent-soft">Personal Details</p>
+          <div className="flex gap-2 justify-between">
+            <Input
+              label="First Name"
+              placeholder="e.g. John"
+              {...register("firstName")}
+              error={errors.firstName?.message}
+            />
+            <Input
+              label="Second Name"
+              placeholder="e.g. Doe"
+              {...register("secondName")}
+              error={errors.secondName?.message}
+            />
+          </div>
+        </section>
 
-          <div className="space-y-5">
-            {/* Name Field */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <User size={12} className="text-accent" /> Full Name (As per ID)
-              </label>
-              <input
-                {...register("name")}
-                placeholder="Davie Karanja"
-                className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 px-5 py-4 rounded-xl text-base font-medium transition-all focus:ring-2 focus:ring-accent/20 outline-none dark:text-white"
+        {/* SECTION 2: COMMUNICATION */}
+        <section className="space-y-6">
+          <p className="text-h3 text-main">Contact Channels</p>
+
+          <section id="contact">
+            <div className="flex gap-4">
+              <Input
+                label="Email Address"
+                placeholder="user@example.com"
+                {...register("email")}
+                error={errors.email?.message}
               />
-              {errors.name && (
-                <p className="text-red-500 text-[10px] font-bold flex items-center gap-1">
-                  <AlertCircle size={10} /> {errors.name.message}
-                </p>
-              )}
+              <Input
+                label="Cell"
+                placeholder="0700 000 000"
+                {...register("phoneNumber")}
+                error={errors.phoneNumber?.message}
+              />
             </div>
+          </section>
+        </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Email Field */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                  <Mail size={12} className="text-accent" /> Email Address
-                </label>
-                <input
-                  {...register("email")}
-                  type="email"
-                  placeholder="karanja@example.com"
-                  className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 px-5 py-4 rounded-xl text-base font-medium transition-all focus:ring-2 focus:ring-accent/20 outline-none dark:text-white"
-                />
-              </div>
-
-              {/* Phone Field */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                  <Phone size={12} className="text-accent" /> Phone Number
-                </label>
-                <input
-                  {...register("phone")}
-                  placeholder="07XX XXX XXX"
-                  className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 px-5 py-4 rounded-xl text-base font-medium transition-all focus:ring-2 focus:ring-accent/20 outline-none dark:text-white"
-                />
-              </div>
-            </div>
-
-            {/* Contact Method Selector */}
-            <div className="pt-4">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 block">
-                Preferred Contact Channel
-              </label>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  {
-                    id: "whatsapp",
-                    label: "WhatsApp",
-                    icon: <MessageSquare size={16} />,
-                  },
-                  {
-                    id: "call",
-                    label: "Voice Call",
-                    icon: <Phone size={16} />,
-                  },
-                  { id: "email", label: "Email", icon: <Mail size={16} /> },
-                ].map((method) => (
-                  <label
-                    key={method.id}
-                    className={`flex flex-col items-center justify-center py-4 rounded-2xl border transition-all cursor-pointer ${
-                      selectedMethod === method.id
-                        ? "border-accent bg-accent/5 text-accent shadow-sm"
-                        : "border-slate-200 dark:border-slate-700 bg-transparent text-slate-400 hover:border-slate-300"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      value={method.id}
-                      className="hidden"
-                      {...register("contactMethod")}
-                    />
-                    {method.icon}
-                    <span className="text-[9px] font-black uppercase mt-2">
-                      {method.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
+        {/* ERROR HANDLING */}
+        {serverError && (
+          <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/20 rounded-xl flex items-center gap-3 text-red-600 dark:text-red-400 text-xs font-bold">
+            <AlertCircle size={16} />
+            {serverError}
           </div>
-
-          <div className="mt-10 p-6 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">
-                Total Amount
-              </p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">
-                KES {service.pricing.total}
-              </p>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-brand-dark dark:bg-accent text-white px-8 py-4 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
-            >
-              {loading ? (
-                <Loader2 className="animate-spin" size={18} />
-              ) : (
-                <>
-                  Continue <ChevronRight size={18} />
-                </>
-              )}
-            </button>
-          </div>
+        )}
+        <div className="flex py-4 justify-center">
+          <Button>
+            Confirm & Pay KES {service?.pricing?.serviceFee?.toLocaleString()}
+          </Button>
         </div>
       </form>
     </div>
   );
 }
+
+/* --- REFINED UI SUB-COMPONENTS --- */

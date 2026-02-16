@@ -9,7 +9,6 @@ from app.lib.db.schemas import (
     ServiceRead,
     ServiceCreateSchema,
     ServiceUpdateSchema,
-    TrendingServiceResponse,
     SuggestionsResponse,
 )
 from app.lib.utils.logger_setup import logger
@@ -103,7 +102,7 @@ async def search_suggestions(
         )
 
 
-@router.get("/trending", response_model=List[TrendingServiceResponse])
+@router.get("/trending", response_model=List[SuggestionsResponse] | None)
 async def get_trending_services(
     response: Response, db: AsyncSession = Depends(get_session), limit: int = 5
 ):
@@ -112,7 +111,10 @@ async def get_trending_services(
     Cached for a shorter duration to reflect shifting trends.
     """
     response.headers["Cache-Control"] = SHORT_CACHE
-    return await service_crud.get_trending_services(db, limit=limit)
+    services = await service_crud.get_trending_services(db, limit=limit)
+    if services:
+        return services
+    return None
 
 
 @router.get("/filters-manifest")

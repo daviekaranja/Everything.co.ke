@@ -85,6 +85,8 @@ class Order(BaseMixin, table=True):
     __tablename__ = "orders"
     user_id: UUID = Field(foreign_key="users.id", index=True, alias="userId")
     service_id: UUID = Field(foreign_key="services.id", index=True, alias="serviceId")
+    amount: int = Field(nullable=True)
+    name: str = Field(nullable=True)
     status: OrderStatus = Field(
         default=OrderStatus.PENDING, sa_column=Column(Enum(OrderStatus), nullable=False)
     )
@@ -182,6 +184,6 @@ class Authors(BaseMixin, table=True):
 class MpesaTransaction(BaseMixin, MpesaTransactionBase, table=True):
     __tablename__ = "transactions"  # ← good, different from class name
 
-    pass
-    # Do NOT redeclare created_at / updated_at here
-    # They come from BaseMixin
+    status: OrderStatus = Field(
+        sa_column=Column(Enum(OrderStatus), index=True, default=OrderStatus.PENDING)
+    )

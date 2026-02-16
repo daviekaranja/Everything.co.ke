@@ -18,7 +18,6 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
         closeButton
         toastOptions={{
           duration: 4000,
-          // This ensures Sonner toasts also match your brand theme
           className: "font-sans",
         }}
       />

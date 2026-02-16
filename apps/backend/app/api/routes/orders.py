@@ -45,7 +45,7 @@ async def get_order_id(order_id: UUID, db: AsyncSession = Depends(get_session)):
     return order
 
 
-@router.post("/", summary="Create a new order")
+@router.post("/create", summary="Create a new order")
 async def create_order(
     db_obj: OrderRequestSchema, db: AsyncSession = Depends(get_session)
 ):

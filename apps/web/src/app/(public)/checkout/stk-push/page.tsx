@@ -1,36 +1,67 @@
-import { prisma } from "@/lib/prisma";
+import { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
-// import STKPushClient from "./STKPushClient";
-import STKPushClient from "@/lib/components/stkpushClient";
+// import StkPushForm from "./StkPushForm";
+import StkPushForm from "@/lib/components/payments/stkpushform";
 
-export default async function STKPushPage({
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export async function generateMetadata({
   searchParams,
-}: {
-  // 1. Update the type to wrap in a Promise
-  searchParams: Promise<{ orderId?: string }>;
-}) {
-  // 2. Await the searchParams before accessing properties
-  const resolvedSearchParams = await searchParams;
-  const orderId = resolvedSearchParams.orderId;
+}: PageProps): Promise<Metadata> {
+  const params = await searchParams;
+  const serviceName = (params.serviceName as string) || "Secure Payment";
 
-  if (!orderId) return notFound();
+  return {
+    title: `Pay for ${serviceName} | Secure M-Pesa Checkout`,
+    description: `Complete your payment for ${serviceName} securely via M-Pesa. Fast, encrypted, and verified transactions.`,
+    alternates: { canonical: "https://everything.co.ke/checkout/stk-push" },
+    robots: { index: false }, // Transactional pages usually shouldn't be indexed to avoid thin content
+  };
+}
 
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    include: { user: true },
-  });
+export default async function StkPushPage({ searchParams }: PageProps) {
+  const params = await searchParams;
 
-  if (!order) return notFound();
+  // Server-side validation of intent
+  if (!params.serviceId || !params.amount || !params.orderId) {
+    return notFound();
+  }
+
+  const trustData = {
+    serviceId: String(params.serviceId),
+    serviceName: String(params.serviceName),
+    orderId: String(params.orderId),
+    amount: Number(params.amount),
+  };
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CheckoutPage",
+    name: `Checkout for ${trustData.serviceName}`,
+    description: "Secure mobile payment gateway",
+  };
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-brand-dark py-12 px-4">
+    <main
+      id="main-content"
+      className="min-h-screen flex flex-col bg-brand-bg dark:bg-brand-dark text-text-main p-2 md:p-6 transition-all duration-300 items-center"
+    >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <div className="max-w-md mx-auto">
-        <STKPushClient
-          orderId={order.id}
-          amount={order.amount}
-          phone={order.user.phone}
-          serviceName={order.serviceName}
-        />
+        <Suspense
+          fallback={
+            <div className="animate-pulse h-64 bg-gray-200 rounded-4xl" />
+          }
+        >
+          <StkPushForm trustData={trustData} />
+        </Suspense>
       </div>
     </main>
   );

@@ -220,13 +220,28 @@ class ServiceCRUD(BaseCRUD[Service, ServiceCreateSchema, ServiceUpdateSchema]):
     ) -> List[Dict[str, Any]]:
         """Returns top services for the 'zero-state' search UI."""
         statement = (
-            select(self.model.name, self.model.slug, self.model.category)
+            select(
+                self.model.name,
+                self.model.slug,
+                self.model.category,
+                self.model.seo_description,
+                self.model.pricing,
+            )
             .where(and_(self.model.published, self.model.available))
             .order_by(desc(self.model.popularity_score))
             .limit(limit)
         )
         result = await db.exec(statement)
-        return [{"n": r.name, "s": r.slug, "c": r.category} for r in result.all()]
+        return [
+            {
+                "n": r.name,
+                "s": r.slug,
+                "c": r.category,
+                "d": r.seo_description,
+                "p": r.pricing.get("serviceFee", 0),
+            }
+            for r in result.all()
+        ]
 
     async def delete_by_slug(self, db: AsyncSession, slug: str) -> None:
         """Delete a service by its slug."""

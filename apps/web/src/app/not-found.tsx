@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MoveLeft, Headset } from "lucide-react";
+import { MoveLeft } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -35,13 +35,13 @@ export default function NotFound() {
             Back to Home
           </Link>
 
-          <a
+          {/* <a
             href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
             className="w-full sm:w-auto flex items-center justify-center gap-2 border-2 border-accent text-accent px-8 py-4 rounded-2xl font-black hover:bg-accent hover:text-white transition-all"
           >
             <Headset className="w-5 h-5" />
             Contact Support
-          </a>
+          </a> */}
         </div>
 
         {/* Decorative Element */}

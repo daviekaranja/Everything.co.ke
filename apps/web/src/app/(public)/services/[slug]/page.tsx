@@ -2,211 +2,230 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import axiosClient from "@/lib/axios-client";
+import {
+  Check,
+  Clock,
+  Shield,
+  ArrowRight,
+  Info,
+  Fingerprint,
+} from "lucide-react";
+import { LinkButton } from "@/lib/components/ui/LinkButton";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-/**
- * SEO: Fetches service metadata from the API
- */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const resolvedParams = await params;
+  const { slug } = await params;
   try {
     const { data: service } = await axiosClient.get(
-      `/services/by-slug/${resolvedParams.slug}`,
+      `/services/by-slug/${slug}`,
     );
     return {
-      title: service.seoTitle || `${service.name} | Everything.co.ke`,
+      title: `${service.name} | Everything.co.ke`,
       description: service.seoDescription,
     };
-  } catch (err) {
+  } catch {
     return { title: "Service Not Found" };
   }
 }
 
-/**
- * Static Generation: Tells Next.js which slugs to pre-render
- */
-export async function generateStaticParams() {
-  try {
-    const { data: slugs } = await axiosClient.get("/services/published-slugs");
-    return slugs.map((slug: string) => ({
-      slug: slug,
-    }));
-  } catch (error) {
-    console.error("Failed to fetch static params:", error);
-    return [];
-  }
-}
-
 export default async function ServiceDetailPage({ params }: Props) {
-  const resolvedParams = await params;
+  const { slug } = await params;
   let service;
 
   try {
-    // Transitioning from local array to FastAPI endpoint
-    const response = await axiosClient.get(
-      `/services/by-slug/${resolvedParams.slug}`,
-    );
+    const response = await axiosClient.get(`/services/by-slug/${slug}`);
     service = response.data;
-  } catch (error) {
-    console.error("Error fetching service detail:", error);
+  } catch {
     return notFound();
   }
 
-  // Structured Data for Google Rich Results
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Service",
-    name: service.name,
-    description: service.seoDescription || service.description,
-    provider: { "@type": "LocalBusiness", name: "Everything.co.ke" },
-    mainEntity: service.faqs?.map((faq: any) => ({
-      "@type": "Question",
-      name: faq.q,
-      acceptedAnswer: { "@type": "Answer", text: faq.a },
-    })),
-  };
-
   return (
-    <div className="bg-brand-bg min-h-screen pb-20">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+    <div className="bg-brand-bg dark:bg-brand-dark min-h-screen">
+      {/* 1. MINIMALIST HERO */}
+      <header className="pt-32 pb-20 border-b border-black/3 dark:border-white/3">
+        <div className="container-center max-w-6xl">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="max-w-2xl">
+              <div className="flex items-center gap-3 mb-6 text-[10px] font-black uppercase tracking-[0.3em] text-accent">
+                <Fingerprint size={14} />
+                <span>Verified Service / {service.provider}</span>
+              </div>
+              <h1 className="text-h1 tracking-[ -0.04em] leading-[0.95] mb-6">
+                {service.name}
+              </h1>
+              <p className="text-text-muted  font-medium leading-relaxed">
+                {service.description}
+              </p>
+            </div>
 
-      <header className="bg-brand-dark pt-12 pb-24 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-wrap gap-3 mb-6">
-            <span className="bg-accent/20 text-accent text-[10px] font-black uppercase px-3 py-1 rounded-full border border-accent/30">
-              {service.provider}
-            </span>
-            <span className="bg-white/10 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full border border-white/20">
-              {service.subCategory || service.category}
-            </span>
+            {/* Quick Stats Strip */}
+            <div className="flex gap-10 py-4 border-t border-black/5 dark:border-white/5 md:border-none">
+              <Stat label="Turnaround" value={service.estimatedTime} />
+              <Stat
+                label="Total Cost"
+                value={`KES ${service.pricing.total.toLocaleString()}`}
+                isAccent
+              />
+            </div>
           </div>
-
-          <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter mb-6">
-            {service.name}
-          </h1>
-          <p className="text-slate-400 text-lg md:text-xl max-w-2xl leading-relaxed">
-            {service.description}
-          </p>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 -mt-12 grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 md:p-12 shadow-xl border border-card-border">
-            <h2 className="text-2xl font-black text-text-main mb-8 flex items-center gap-3">
-              <span className="w-8 h-8 bg-accent/10 text-accent rounded-lg flex items-center justify-center text-sm">
-                📋
-              </span>
-              What You Need
-            </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {service.requirements?.map((req: string, i: number) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 p-4 bg-brand-bg rounded-2xl border border-card-border group hover:border-accent/30 transition-colors"
-                >
-                  <span className="text-accent font-bold mt-0.5">✓</span>
-                  <span className="text-sm font-bold text-text-main leading-tight">
-                    {req}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {service.faqs && service.faqs.length > 0 && (
-            <section className="space-y-4">
-              <h2 className="text-2xl font-black text-text-main px-4">
-                Common Questions
+      {/* 2. LEAN GRID */}
+      <main className="container-center max-w-6xl py-20">
+        <div className="grid lg:grid-cols-12 gap-16 md:gap-24">
+          {/* Left: Info Sections */}
+          <div className="lg:col-span-7 space-y-24">
+            {/* Requirements: Editorial List */}
+            <section>
+              <h2 className="text-xs font-black uppercase tracking-[0.2em] mb-10 text-text-muted">
+                Requirement Checklist
               </h2>
-              {service.faqs.map((faq: any, i: number) => (
-                <details
-                  key={i}
-                  className="group bg-white dark:bg-slate-900 border border-card-border rounded-3xl overflow-hidden cursor-pointer"
-                >
-                  <summary className="p-6 font-black text-text-main flex justify-between items-center list-none group-open:text-accent transition-colors">
-                    {faq.q}
-                    <span className="group-open:rotate-180 transition-transform duration-300">
-                      ↓
+              <div className="space-y-0">
+                {service.requirements?.map((req: string, i: number) => (
+                  <div
+                    key={i}
+                    className="group flex items-center justify-between py-6 border-b border-black/5 dark:border-white/5 last:border-none"
+                  >
+                    <span className="text-lg font-bold tracking-tight">
+                      {req}
                     </span>
-                  </summary>
-                  <div className="px-6 pb-6 text-text-muted text-sm leading-relaxed animate-in fade-in slide-in-from-top-2">
-                    {faq.a}
+                    <Check
+                      size={20}
+                      className="text-accent opacity-0 group-hover:opacity-100 transition-opacity"
+                    />
                   </div>
-                </details>
-              ))}
+                ))}
+              </div>
             </section>
-          )}
-        </div>
 
-        <aside className="lg:col-span-1">
-          <div className="sticky top-24 space-y-6">
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-2xl border-2 border-accent/20">
-              <h3 className="text-xl font-black text-text-main mb-6">
-                Price Breakdown
-              </h3>
-              <div className="space-y-4 mb-8">
-                <div className="flex justify-between text-sm font-bold">
-                  <span className="text-text-muted italic">Gov. Fee</span>
-                  <span className="text-text-main">
-                    KES {Number(service.pricing.governmentFee).toLocaleString()}
-                  </span>
+            {/* FAQ: Clean Accordion */}
+            {service.faqs?.length > 0 && (
+              <section>
+                <h2 className="text-xs font-black uppercase tracking-[0.2em] mb-10 text-text-muted">
+                  Common Clarifications
+                </h2>
+                <div className="space-y-4">
+                  {service.faqs.map((faq: any, i: number) => (
+                    <details key={i} className="group cursor-pointer">
+                      <summary className="list-none flex items-center justify-between py-4 text-xl font-bold tracking-tight border-b border-black/3 dark:border-white/3">
+                        {faq.q}
+                        <ArrowRight
+                          size={18}
+                          className="group-open:rotate-90 transition-transform"
+                        />
+                      </summary>
+                      <p className="py-6 text-text-muted leading-relaxed font-medium max-w-xl">
+                        {faq.a}
+                      </p>
+                    </details>
+                  ))}
                 </div>
-                <div className="flex justify-between text-sm font-bold">
-                  <span className="text-text-muted">Service Fee</span>
-                  <span className="text-text-main">
-                    KES {Number(service.pricing.serviceFee).toLocaleString()}
-                  </span>
-                </div>
-                <div className="pt-4 border-t border-dashed border-card-border flex justify-between items-end">
-                  <span className="text-lg font-black text-text-main uppercase">
-                    Total
-                  </span>
-                  <div className="text-right">
-                    <span className="block text-[10px] font-black text-accent uppercase tracking-widest">
-                      Inclusive of VAT
+              </section>
+            )}
+          </div>
+
+          {/* Right: Checkout Sidebar */}
+          <aside className="lg:col-span-5">
+            <div className="sticky top-32 space-y-12">
+              {/* Ultra-Lean Price Breakdown */}
+              <div className="space-y-8">
+                <div className="space-y-4">
+                  <PriceLine
+                    label="Official Government Fee"
+                    amount={service.pricing.governmentFee}
+                  />
+                  <PriceLine
+                    label="EverythingKe Processing"
+                    amount={service.pricing.serviceFee}
+                  />
+                  <div className="pt-4 flex justify-between items-end">
+                    <span className="text-xs font-black uppercase tracking-widest">
+                      Grand Total
                     </span>
-                    <span className="text-3xl font-black text-accent tracking-tighter">
-                      KES {Number(service.pricing.total).toLocaleString()}
+                    <span className="text-5xl font-black tracking-tighter">
+                      <span className="text-sm font-bold mr-2 text-accent">
+                        KES
+                      </span>
+                      {Number(service.pricing.total).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                <LinkButton
+                  href={`/checkout/personal-details?serviceId=${service.id}&slug=${service.slug}`}
+                  variant="main"
+                >
+                  Proceed to Payment
+                </LinkButton>
+              </div>
+
+              {/* Minimal Trust Indicator */}
+              <div className="pt-12 border-t border-black/5 dark:border-white/5 space-y-6">
+                <div className="flex gap-4 items-start">
+                  <Info size={16} className="text-accent shrink-0 mt-1" />
+                  <p className="text-[11px] leading-relaxed text-text-muted font-bold uppercase tracking-wider">
+                    Our team provides real-time facilitation. After payment, you
+                    will be assigned a personal agent to manage the portal
+                    session and OTP verification.
+                  </p>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <Shield size={14} className="text-accent" />
+                    <span className="text-[10px] font-black uppercase tracking-tighter">
+                      Encrypted
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock size={14} className="text-accent" />
+                    <span className="text-[10px] font-black uppercase tracking-tighter">
+                      Fast-Track
                     </span>
                   </div>
                 </div>
               </div>
-
-              <Link
-                href={`/checkout/personal-details?service=${service.slug}`}
-                className="w-full bg-accent text-white py-5 rounded-2xl font-black shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center text-center"
-              >
-                Apply Now
-              </Link>
-
-              <div className="mt-6 flex flex-col gap-3">
-                <div className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-widest">
-                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  Estimated: {service.estimatedTime}
-                </div>
-              </div>
             </div>
-
-            <div className="bg-brand-dark rounded-3xl p-6 text-white border border-white/10">
-              <h4 className="text-xs font-black uppercase tracking-widest text-accent mb-2">
-                Live Session Required
-              </h4>
-              <p className="text-[11px] text-slate-400 leading-relaxed font-medium">
-                After payment, our agent will contact you immediately. Please
-                stay near your phone for the <strong>OTP verification</strong>{" "}
-                to complete this request.
-              </p>
-            </div>
-          </div>
-        </aside>
+          </aside>
+        </div>
       </main>
+    </div>
+  );
+}
+
+/* --- LEAN UI HELPERS --- */
+
+function Stat({
+  label,
+  value,
+  isAccent,
+}: {
+  label: string;
+  value: string;
+  isAccent?: boolean;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] font-black uppercase tracking-widest text-text-muted mb-1">
+        {label}
+      </p>
+      <p
+        className={`text-xl font-black tracking-tight ${isAccent ? "text-accent" : ""}`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function PriceLine({ label, amount }: { label: string; amount: number }) {
+  return (
+    <div className="flex justify-between items-center py-2 text-sm font-bold tracking-tight border-b border-black/3 dark:border-white/3">
+      <span className="text-text-muted">{label}</span>
+      <span>KES {Number(amount).toLocaleString()}</span>
     </div>
   );
 }

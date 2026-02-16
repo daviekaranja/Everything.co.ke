@@ -7,7 +7,7 @@ from app.api.deps import get_session
 from app.lib.crud.payment import payment_crud
 from app.lib.db.schemas import StkRequest, TransactionCreate, TransactionRead
 from app.lib.services.mpesa import mpesa_client
-from app.lib.utils.helpers import utc_now
+from app.lib.utils.helpers import utc_now, validate_and_format_kenyan_phone
 from app.lib.utils.logger_setup import logger
 
 router = APIRouter()
@@ -35,9 +35,12 @@ async def initiate_stk_push(
     """
     Triggers Lipa na M-Pesa STK Push (prompt on customer's phone)
     """
+    phone_number = validate_and_format_kenyan_phone(payload.phone, format=True)
+    if not phone_number:
+        return HTTPException(status_code=400, detail="Invalid phone number")
     try:
         response = await mpesa_client.stk_push(
-            phone=payload.phone,
+            phone=phone_number,
             amount=payload.amount,
             account_reference=payload.reference,
             transaction_desc=payload.description,
@@ -46,7 +49,7 @@ async def initiate_stk_push(
         response_code = response.get("ResponseCode", None)
 
         db_obj = TransactionCreate(
-            phone_number=payload.phone,
+            phone_number=phone_number,
             amount=payload.amount,
             reference=payload.reference,
             merchant_request_id=response.get("MerchantRequestID", None),
@@ -57,7 +60,7 @@ async def initiate_stk_push(
         )
 
         transaction = await payment_crud.get_or_create_transaction(db, db_obj)
-
+        logger.debug(f"created transactions: {transaction.checkout_request_id}")
         return transaction
 
     except ValueError as ve:

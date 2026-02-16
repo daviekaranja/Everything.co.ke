@@ -1,211 +1,270 @@
 "use client";
 
-// import GlobalSearch from "@/lib/components/services/searchBar";
-import { useRouter } from "next/navigation";
-import { homeSchema, optimizedFaqSchema } from "@/lib/markup_schemas";
-// import { HeroSection } from "@/lib/components/homepage/herosection";
-import HeroSection from "@/lib/components/homepage/herosection";
+import React from "react";
+import { HeroSection } from "@/lib/components/homepage/herosection";
+import {
+  Shield,
+  Clock,
+  Zap,
+  ArrowRight,
+  CheckCircle,
+  Smartphone,
+  Search,
+} from "lucide-react";
+import { FAQSection } from "@/lib/components/homepage-ui";
+import PopularServices from "@/lib/components/hero/popular-services";
+import { motion } from "framer-motion";
 
 export default function HomePage() {
-  const router = useRouter();
-
   return (
-    <>
-      {/* Structural SEO Scripts */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(optimizedFaqSchema) }}
-      />
+    <div className="bg-brand-bg">
+      {/* 1. HERO SECTION */}
+      <HeroSection />
 
-      <div className=" transition-colors duration-300">
-        {/* ================= HERO SECTION ================= */}
-        <HeroSection />
-        {/*  */}
+      {/* 2. LOGO CLOUD / TRUST STRIP */}
+      <section className="py-10 border-b border-card-border bg-white/50 dark:bg-slate-900/20">
+        <div className="container-center">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted text-center mb-8">
+            Facilitating Services For
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all">
+            <TrustLogo label="eCitizen" />
+            <TrustLogo label="KRA iTax" />
+            <TrustLogo label="NTSA TIMS" />
+            <TrustLogo label="HELB" />
+            <TrustLogo label="Business Registration" />
+          </div>
+        </div>
+      </section>
 
-        {/* ================= PARTNERS LOGO CLOUD ================= */}
-        <section className="py-8 md:py-12 bg-white dark:bg-brand-dark border-b border-card-border/30">
-          <div className="max-w-6xl mx-auto px-6 overflow-hidden">
-            <p className="text-[9px] font-black uppercase tracking-[0.3em] text-center text-text-muted mb-6 md:mb-8">
-              Official Portal Assistance
+      {/* 3. POPULAR SERVICES */}
+      <section id="popular-services" className="py-24 container-center">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+          <div className="max-w-xl">
+            <span className="text-accent font-black uppercase tracking-widest text-[10px] mb-3 block">
+              Quick Access
+            </span>
+            <h2 className="text-h2 tracking-tighter">
+              Most Requested <span className="text-accent">Services</span>
+            </h2>
+          </div>
+          <button className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-text-main hover:text-accent transition-colors">
+            View All Services <ArrowRight size={18} />
+          </button>
+        </div>
+        <PopularServices />
+      </section>
+
+      {/* 4. THE 3-STEP PROCESS (HOW IT WORKS) */}
+      <section className="py-24 bg-brand-dark text-white relative overflow-hidden">
+        <div className="container-center relative z-10">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-h2 text-white mb-4 tracking-tighter">
+              Getting it done is <span className="text-accent">simple.</span>
+            </h2>
+            <p className="text-slate-400">
+              Skip the queues and the tech-stress in three easy steps.
             </p>
-            <div className="flex flex-wrap justify-center items-center gap-6 md:gap-16 opacity-50 grayscale contrast-125">
-              {[
-                "eCitizen",
-                "KRA",
-                "NTSA",
-                "HELB",
-                "DCI",
-                "Business Registration",
-              ].map((p) => (
-                <span
-                  key={p}
-                  className="text-xl md:text-3xl font-black tracking-tighter text-brand-dark dark:text-white"
-                >
-                  {p}
-                </span>
-              ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <ProcessStep
+              number="01"
+              title="Select Service"
+              desc="Browse our catalog and choose the specific KRA, NTSA, or eCitizen task."
+            />
+            <ProcessStep
+              number="02"
+              title="Upload Details"
+              desc="Share required IDs or documents via our secure WhatsApp integration."
+            />
+            <ProcessStep
+              number="03"
+              title="Receive Files"
+              desc="Get your certificates or processed documents directly to your phone."
+            />
+          </div>
+        </div>
+        {/* Decorative background element */}
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-accent/10 blur-[120px] rounded-full" />
+      </section>
+
+      {/* 5. WHY CHOOSE US (TRUST BAR RE-IMAGINED) */}
+      <section className="py-24 container-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="space-y-8">
+            <h2 className="text-h2 tracking-tighter">
+              Why thousands of Kenyans <br />{" "}
+              <span className="text-accent">trust</span> EverythingKe.
+            </h2>
+            <div className="space-y-6">
+              <TrustFeature
+                icon={<Shield className="text-accent" />}
+                title="Strict Data Privacy"
+                desc="We clear all PII from our systems immediately after service delivery."
+              />
+              <TrustFeature
+                icon={<Zap className="text-accent" />}
+                title="Record Speed"
+                desc="Most Nil returns and DL renewals are completed in under 60 minutes."
+              />
+              <TrustFeature
+                icon={<Smartphone className="text-accent" />}
+                title="Mobile First"
+                desc="Optimized for M-Pesa and WhatsApp for a seamless mobile experience."
+              />
             </div>
           </div>
-        </section>
-
-        {/* ================= SERVICE PILLARS ================= */}
-        <section className="py-16 md:py-24 max-w-7xl mx-auto px-6">
-          <header className="mb-12 text-center md:text-left">
-            <h2 className="text-3xl md:text-5xl font-black tracking-tighter text-text-main">
-              Everything you need,{" "}
-              <span className="text-accent">all in one place.</span>
-            </h2>
-          </header>
-          <div className="grid gap-6 md:grid-cols-3">
-            <PillarCard
-              title="Government"
-              desc="Fast-tracked eCitizen Kenya apps and police clearance certificates."
-              items={[
-                "KRA Tax Returns",
-                "Passport Applications",
-                "Good Conduct",
-                "HELB Assistance",
-              ]}
-            />
-            <PillarCard
-              title="Business"
-              desc="Get your Business Registration in Kenya handled by experts."
-              items={[
-                "Company Registration",
-                "CR12 Search",
-                "Business KRA PIN",
-                "Tax Compliance",
-              ]}
-              isFeatured={true}
-            />
-            <PillarCard
-              title="Cyber Hub"
-              desc="Professional document processing services for any requirement."
-              items={[
-                "Professional CVs",
-                "PDF Editing",
-                "Scanning & Uploads",
-                "Online Applications",
-              ]}
-            />
-          </div>
-        </section>
-
-        {/* ================= HOW IT WORKS ================= */}
-        <section className="py-20 md:py-32 bg-card-bg border-y border-card-border">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <div>
-                <h2 className="text-4xl md:text-7xl font-black text-text-main tracking-tighter leading-tight mb-6">
-                  Simple <span className="text-accent italic">3-Step</span>{" "}
-                  Process
-                </h2>
-                <p className="text-text-muted text-lg leading-relaxed">
-                  Skip the long queues at Nyayo House or Huduma Centers. We
-                  handle the heavy lifting for you digitally.
-                </p>
-              </div>
-              <div className="space-y-8">
-                <Step
-                  number="01"
-                  title="Select Service"
-                  text="Choose from our range of online cyber services Kenya citizens rely on."
-                />
-                <Step
-                  number="02"
-                  title="Send Details"
-                  text="Share required documents safely via our encrypted WhatsApp line."
-                />
-                <Step
-                  number="03"
-                  title="Relax"
-                  text="Get your certificate or receipt processed and delivered to your phone."
-                />
+          <div className="relative">
+            <div className="bg-accent-soft rounded-[3rem] p-12 relative z-10 border border-accent/10">
+              <h3 className="text-2xl font-black mb-6 tracking-tight">
+                Our Daily Impact
+              </h3>
+              <div className="grid grid-cols-2 gap-8">
+                <Stat value="500+" label="Daily Filings" />
+                <Stat value="15m" label="Avg Response" />
+                <Stat value="100%" label="Secure" />
+                <Stat value="4.9/5" label="User Rating" />
               </div>
             </div>
+            {/* Background glow */}
+            <div className="absolute inset-0 bg-accent blur-[80px] opacity-20 -z-0 translate-x-4 translate-y-4" />
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ================= FINAL CTA ================= */}
-        <section className="py-20 px-4 md:px-6">
-          <div className="max-w-6xl mx-auto bg-brand-dark rounded-[2rem] md:rounded-[4rem] p-8 md:p-24 relative overflow-hidden text-center shadow-2xl shadow-brand-dark/20">
-            <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-transparent pointer-events-none" />
-            <h2 className="text-4xl md:text-7xl font-black text-white mb-6 relative z-10 tracking-tighter">
-              Avoid Penalties. <br /> Start Today.
-            </h2>
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="inline-block relative z-10 bg-accent text-white px-8 py-4 md:px-12 md:py-6 rounded-xl font-black text-lg md:text-xl hover:scale-105 transition-transform shadow-xl"
-            >
-              Search All Services
-            </button>
+      {/* 6. CATEGORY GRID */}
+      <section className="py-24 bg-slate-50 dark:bg-slate-900/50 border-y border-card-border">
+        <div className="container-center">
+          <h2 className="text-h2 mb-12 tracking-tighter">
+            Browse by <span className="text-accent">Category</span>
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <CategoryCard
+              title="Business & Tax"
+              count="12 Services"
+              tags={["KRA", "BRS", "eTIMS"]}
+            />
+            <CategoryCard
+              title="Transport"
+              count="8 Services"
+              tags={["NTSA", "DL", "Logbook"]}
+            />
+            <CategoryCard
+              title="Legal & Safety"
+              count="5 Services"
+              tags={["Good Conduct", "Affidavits"]}
+            />
+            <CategoryCard
+              title="Land & Property"
+              count="4 Services"
+              tags={["Searches", "Valuation"]}
+            />
           </div>
-        </section>
-      </div>
-    </>
+        </div>
+      </section>
+
+      {/* 7. FAQ SECTION */}
+      <section id="faqs" className="py-24">
+        <FAQSection />
+      </section>
+    </div>
   );
 }
 
-/* -----------------------------------------------------
-    UI COMPONENTS (Optimized for performance)
------------------------------------------------------ */
+/* --- Sub-Components for Professional Layout --- */
 
-function PillarCard({
-  title,
-  desc,
-  items,
-  isFeatured = false,
-}: {
-  title: string;
-  desc: string;
-  items: string[];
-  isFeatured?: boolean;
-}) {
+function TrustLogo({ label }: { label: string }) {
   return (
-    <article
-      className={`p-8 md:p-10 rounded-[2rem] border-2 transition-all duration-300 ${
-        isFeatured
-          ? "bg-white border-accent shadow-[8px_8px_0px_0px_rgba(249,115,22,1)] md:-translate-y-4"
-          : "bg-white border-brand-dark shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-      }`}
-    >
-      <h3 className="text-2xl font-black text-text-main mb-3">{title}</h3>
-      <p className="text-text-muted text-sm mb-6 leading-relaxed font-medium">
-        {desc}
-      </p>
-      <ul className="space-y-3">
-        {items.map((item) => (
-          <li
-            key={item}
-            className="flex items-center gap-2 text-sm font-bold text-text-main"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-accent" /> {item}
-          </li>
-        ))}
-      </ul>
-    </article>
+    <span className="text-sm font-black tracking-tighter uppercase">
+      {label}
+    </span>
   );
 }
 
-function Step({
+function ProcessStep({
   number,
   title,
-  text,
+  desc,
 }: {
   number: string;
   title: string;
-  text: string;
+  desc: string;
 }) {
   return (
-    <div className="flex gap-6 items-start">
-      <span className="text-4xl font-black text-accent/20">{number}</span>
+    <div className="relative p-8 bg-white/5 border border-white/10 rounded-[2rem] group hover:border-accent/50 transition-all">
+      <span className="text-5xl font-black text-white/10 mb-6 block group-hover:text-accent/20 transition-colors tracking-tighter">
+        {number}
+      </span>
+      <h3 className="text-xl font-bold mb-3">{title}</h3>
+      <p className="text-sm text-slate-400 leading-relaxed">{desc}</p>
+    </div>
+  );
+}
+
+function TrustFeature({
+  icon,
+  title,
+  desc,
+}: {
+  icon: any;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <div className="flex gap-5">
+      <div className="shrink-0 w-12 h-12 bg-accent-soft rounded-2xl flex items-center justify-center">
+        {icon}
+      </div>
       <div>
-        <h3 className="text-xl font-black text-text-main mb-1">{title}</h3>
-        <p className="text-text-muted text-sm leading-relaxed">{text}</p>
+        <h4 className="font-bold text-lg mb-1">{title}</h4>
+        <p className="text-sm text-text-muted leading-relaxed">{desc}</p>
+      </div>
+    </div>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div>
+      <div className="text-3xl font-black text-text-main tracking-tighter mb-1">
+        {value}
+      </div>
+      <div className="text-[10px] font-black uppercase tracking-widest text-text-muted">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function CategoryCard({
+  title,
+  count,
+  tags,
+}: {
+  title: string;
+  count: string;
+  tags: string[];
+}) {
+  return (
+    <div className="p-8 bg-card-bg border border-card-border rounded-[2.5rem] hover:shadow-xl hover:shadow-slate-200 dark:hover:shadow-none transition-all group cursor-pointer">
+      <div className="flex justify-between items-start mb-6">
+        <h3 className="text-xl font-black tracking-tight leading-tight max-w-[120px]">
+          {title}
+        </h3>
+        <span className="text-[10px] font-bold bg-accent-soft text-accent px-3 py-1 rounded-full uppercase tracking-tighter">
+          {count}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {tags.map((tag) => (
+          <span
+            key={tag}
+            className="text-[10px] text-text-muted border border-card-border px-2 py-1 rounded-md"
+          >
+            {tag}
+          </span>
+        ))}
       </div>
     </div>
   );

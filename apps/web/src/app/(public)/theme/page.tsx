@@ -2,7 +2,7 @@
 
 import { ThemeToggle } from "@/lib/components/themetoggle";
 import {
-  ServiceCard,
+  PopularCard,
   ActionPill,
   HubInput,
 } from "@/lib/components/ui-elements";
@@ -81,21 +81,21 @@ export default function ThemeTestPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <ServiceCard
+            <PopularCard
               title="KRA Pin Registration"
               tag="Official assistance"
               price="Ksh 500.00"
               icon={ShieldCheck}
               description="New KRA PIN applications for individuals and businesses with guaranteed 12-hour delivery."
             />
-            <ServiceCard
+            <PopularCard
               title="NTSA DL Renewal"
               tag="Automated"
               price="Ksh 1,200.00"
               icon={CreditCard}
               description="Renew your 3-year or 1-year driving license instantly. Physical card delivery available."
             />
-            <ServiceCard
+            <PopularCard
               title="Marriage Certificate"
               tag="Legal Services"
               price="Ksh 3,500.00"

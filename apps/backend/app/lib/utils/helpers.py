@@ -46,7 +46,7 @@ def validate_and_format_kenyan_phone(phone: str, format: bool = False) -> Option
 
     if format:
         # Return international format
-        return f"+254{digits}"
+        return f"254{digits}"
     else:
         # Return cleaned local format (with 0 prefix)
         return f"0{digits}"

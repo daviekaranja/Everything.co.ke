@@ -173,7 +173,7 @@ class UserSchema(BaseModel):
     second_name: str = Field(alias="secondName")
     email: EmailStr
     phone_number: str = Field(alias="phoneNumber")
-    contact_method: str = Field(alias="contactMethod")
+    contact_method: Optional[str] = Field(default="Whatsapp", alias="contactMethod")
 
     model_config = ConfigDict(populate_by_name=True, from_attributes=True)
 
@@ -197,6 +197,7 @@ class UserUpdateSchema(BaseModel):
 class OrderSchema(BaseModel):
     user_id: UUID = Field(alias="userId")
     service_id: UUID = Field(alias="serviceId")
+
     # created_at: datetime = Field(alias="orderDate")
     #
     model_config = ConfigDict(populate_by_name=True, from_attributes=True)
@@ -211,7 +212,8 @@ class OrderCreateSchema(OrderSchema):
 
 
 class OrderRequestSchema(OrderSchema):
-    pass
+    name: str
+    amount: int
 
 
 # --- Blog Schemas ---
@@ -235,15 +237,17 @@ class BlogPostRead(BaseModel):
 
 # --- Response Schemas ---
 class TrendingServiceResponse(BaseModel):
-    n: str
-    s: str
-    c: ServiceCategory
+    n: Optional[str] = None
+    s: Optional[str] = None
+    c: Optional[ServiceCategory] = None
+    d: str = None
+    # p: Optional[int] = None
     # provider: ServiceProvider
     # popularity_score: float = Field(alias="popularityScore")
 
 
 class SuggestionsResponse(TrendingServiceResponse):
-    p: float
+    p: Optional[float]
 
 
 class MpesaTransactionBase(BaseModel):
@@ -273,7 +277,7 @@ class TransactionUpdate(MpesaTransactionBase):
 
 
 class TransactionRead(MpesaTransactionBase):
-    pass
+    status: Optional[OrderStatus] = None
 
 
 class PhonePayload(BaseModel):

@@ -105,9 +105,11 @@ export default function RootLayout({
       </head>
 
       <body className="min-h-screen flex flex-col bg-brand-bg dark:bg-brand-dark text-text-main">
+        {/* Removed mt-20 */}
         <ClientProviders>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main className="flex flex-col grow">{children}</main>{" "}
+          {/* Removed px-20 */}
           <Footer />
         </ClientProviders>
       </body>
