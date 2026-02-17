@@ -11,6 +11,10 @@ export default function HomePage() {
       {/* 1. HERO SECTION */}
       <HeroSection />
 
+      {/* <div className="bg-blue-500 p-4 sm:bg-green-500 md:bg-red-500 lg:bg-purple-500 text-white">
+        Resize me — should change color at sm/md/lg
+      </div> */}
+
       {/* 2. LOGO CLOUD / TRUST STRIP */}
       <section className="py-10 border-b border-card-border bg-white/50 dark:bg-slate-900/20">
         <div className="container-center">
