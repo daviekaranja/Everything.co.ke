@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import axiosClient from "@/lib/axios-client";
 import {
   Check,

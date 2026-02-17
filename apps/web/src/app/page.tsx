@@ -1,19 +1,9 @@
 "use client";
 
-import React from "react";
 import { HeroSection } from "@/lib/components/homepage/herosection";
-import {
-  Shield,
-  Clock,
-  Zap,
-  ArrowRight,
-  CheckCircle,
-  Smartphone,
-  Search,
-} from "lucide-react";
+import { Shield, Zap, ArrowRight, Smartphone } from "lucide-react";
 import { FAQSection } from "@/lib/components/homepage-ui";
 import PopularServices from "@/lib/components/hero/popular-services";
-import { motion } from "framer-motion";
 
 export default function HomePage() {
   return (
@@ -24,13 +14,13 @@ export default function HomePage() {
       {/* 2. LOGO CLOUD / TRUST STRIP */}
       <section className="py-10 border-b border-card-border bg-white/50 dark:bg-slate-900/20">
         <div className="container-center">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted text-center mb-8">
+          <p className=" text-text-muted text-center mb-8">
             Facilitating Services For
           </p>
           <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all">
             <TrustLogo label="eCitizen" />
-            <TrustLogo label="KRA iTax" />
-            <TrustLogo label="NTSA TIMS" />
+            <TrustLogo label="KRA" />
+            <TrustLogo label="NTSA" />
             <TrustLogo label="HELB" />
             <TrustLogo label="Business Registration" />
           </div>
@@ -176,7 +166,7 @@ export default function HomePage() {
 
 function TrustLogo({ label }: { label: string }) {
   return (
-    <span className="text-sm font-black tracking-tighter uppercase">
+    <span className="text-h4 font-black text-text-main tracking-tighter uppercase">
       {label}
     </span>
   );
@@ -192,7 +182,7 @@ function ProcessStep({
   desc: string;
 }) {
   return (
-    <div className="relative p-8 bg-white/5 border border-white/10 rounded-[2rem] group hover:border-accent/50 transition-all">
+    <div className="relative p-8 bg-white/5 border border-white/10 rounded-4xl group hover:border-accent/50 transition-all">
       <span className="text-5xl font-black text-white/10 mb-6 block group-hover:text-accent/20 transition-colors tracking-tighter">
         {number}
       </span>
