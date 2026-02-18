@@ -9,9 +9,6 @@ from app.lib.db.models import User
 from app.lib.db.schemas import UserCreateSchema, UserUpdateSchema
 
 
-from ..utils.logger_setup import logger
-
-
 class UserCRUD(BaseCRUD[User, UserCreateSchema, UserUpdateSchema]):
     """CRUD operations for User model."""
 
@@ -26,16 +23,7 @@ class UserCRUD(BaseCRUD[User, UserCreateSchema, UserUpdateSchema]):
         result = await db.exec(stmt)
         user = result.first()
 
-        logger.debug(f"Queried for user by email: {user}")
-        return user
-
-    # async def create(self, db: AsyncSession, *, obj_in: UserCreateSchema) -> User:
-    #     """Create a new user."""
-    #     db_obj = self.model.from_orm(obj_in)
-    #     db.add(db_obj)
-    #     await db.commit()
-    #     await db.refresh(db_obj)
-    #     return db_obj
+        return user if user else None
 
 
 user_crud = UserCRUD(User)

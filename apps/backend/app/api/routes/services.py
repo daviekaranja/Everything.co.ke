@@ -1,11 +1,16 @@
-from typing import List, Optional, Dict, Any, Annotated
+from typing import List, Optional, Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.api.deps import get_session
 from app.lib.crud.service import service_crud
 from app.lib.db.models import ServiceCategory, ServiceProvider
-from app.lib.db.schemas import ServiceRead, ServiceCreateSchema, ServiceUpdateSchema
+from app.lib.db.schemas import (
+    ServiceRead,
+    ServiceCreateSchema,
+    ServiceUpdateSchema,
+    SuggestionsResponse,
+)
 from app.lib.utils.logger_setup import logger
 
 router = APIRouter(
@@ -65,7 +70,7 @@ async def get_service_by_slug(slug: str, db: AsyncSession = Depends(get_session)
     return service
 
 
-@router.get("/search-manifest", response_model=List[Dict[str, Any]])
+@router.get("/search-manifest", response_model=List[SuggestionsResponse])
 async def get_search_manifest(
     response: Response, db: AsyncSession = Depends(get_session), limit: int = 200
 ):
@@ -80,7 +85,7 @@ async def get_search_manifest(
     return manifest
 
 
-@router.get("/suggestions", response_model=List[dict])
+@router.get("/suggestions", response_model=List[SuggestionsResponse])
 async def search_suggestions(
     q: Annotated[str, Query(min_length=3)], db: AsyncSession = Depends(get_session)
 ):
@@ -97,7 +102,7 @@ async def search_suggestions(
         )
 
 
-@router.get("/trending", response_model=List[dict])
+@router.get("/trending", response_model=List[SuggestionsResponse] | None)
 async def get_trending_services(
     response: Response, db: AsyncSession = Depends(get_session), limit: int = 5
 ):
@@ -106,7 +111,10 @@ async def get_trending_services(
     Cached for a shorter duration to reflect shifting trends.
     """
     response.headers["Cache-Control"] = SHORT_CACHE
-    return await service_crud.get_trending_services(db, limit=limit)
+    services = await service_crud.get_trending_services(db, limit=limit)
+    if services:
+        return services
+    return None
 
 
 @router.get("/filters-manifest")
@@ -119,6 +127,32 @@ async def get_filters_manifest(
     """
     response.headers["Cache-Control"] = LONG_CACHE
     return await service_crud.get_filters_manifest(db)
+
+
+@router.get("/services-by-provider/{provider}", response_model=List[ServiceRead])
+async def get_services_by_provider(
+    provider: ServiceProvider,
+    response: Response,
+    db: AsyncSession = Depends(get_session),
+):
+    """
+    Fetches all services offered by a specific provider.
+    Used for provider-specific landing pages.
+    """
+    response.headers["Cache-Control"] = LONG_CACHE
+    return await service_crud.services_by_provider(db, provider)
+
+
+@router.get("/published-slugs", response_model=List[str])
+async def get_published_slugs(
+    response: Response, db: AsyncSession = Depends(get_session), limit: int = 100
+):
+    """
+    Returns a list of slugs for all published and available services.
+    Used for Next.js static generation (SSG) of dynamic routes.
+    """
+    response.headers["Cache-Control"] = LONG_CACHE
+    return await service_crud.get_published_slugs(db, limit=limit)
 
 
 @router.post("/register", status_code=201)

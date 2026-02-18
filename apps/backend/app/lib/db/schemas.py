@@ -1,9 +1,11 @@
-from datetime import datetime
 from typing import Literal, List, Optional
 from uuid import UUID
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_validator
 from pydantic.alias_generators import to_camel
 from enum import Enum as PyEnum
+
+
+from app.lib.utils.helpers import validate_and_format_kenyan_phone
 
 
 # --- ENUMS ---
@@ -39,6 +41,12 @@ class OrderStatus(str, PyEnum):
     IN_PROGRESS = "In Progress"
     COMPLETED = "Completed"
     CANCELLED = "Cancelled"
+
+
+class ApiResponse(BaseModel):
+    success: bool
+    message: Optional[str] = None
+    data: Optional[dict] = None
 
 
 # --- Shared Nested Models ---
@@ -165,13 +173,17 @@ class UserSchema(BaseModel):
     second_name: str = Field(alias="secondName")
     email: EmailStr
     phone_number: str = Field(alias="phoneNumber")
-    contact_method: str = Field(alias="contactMethod")
+    contact_method: Optional[str] = Field(default="Whatsapp", alias="contactMethod")
 
     model_config = ConfigDict(populate_by_name=True, from_attributes=True)
 
 
 class UserCreateSchema(UserSchema):
     pass
+
+
+class UserRead(UserSchema):
+    id: UUID
 
 
 class UserUpdateSchema(BaseModel):
@@ -182,28 +194,26 @@ class UserUpdateSchema(BaseModel):
     email: str
 
 
-class OrderUpdateSchema(BaseModel):
-    status: str
-
-
 class OrderSchema(BaseModel):
     user_id: UUID = Field(alias="userId")
     service_id: UUID = Field(alias="serviceId")
-    status: str
-    created_at: datetime = Field(alias="orderDate")
 
+    # created_at: datetime = Field(alias="orderDate")
+    #
     model_config = ConfigDict(populate_by_name=True, from_attributes=True)
 
 
-class OrderCreateSchema(BaseModel):
-    user_id: UUID
-    service_id: UUID
-    status: str
+class OrderUpdateSchema(BaseModel):
+    status: OrderStatus
 
 
-class OrderRequestSchema(UserCreateSchema):
-    service_id: UUID
-    status: str
+class OrderCreateSchema(OrderSchema):
+    status: Optional[str] = "Pending"
+
+
+class OrderRequestSchema(OrderSchema):
+    name: str
+    amount: int
 
 
 # --- Blog Schemas ---
@@ -223,3 +233,70 @@ class BlogPostRead(BaseModel):
     faqs: List[FAQ]
 
     model_config = ConfigDict(populate_by_name=True, from_attributes=True)
+
+
+# --- Response Schemas ---
+class TrendingServiceResponse(BaseModel):
+    n: Optional[str] = None
+    s: Optional[str] = None
+    c: Optional[ServiceCategory] = None
+    d: str = None
+    # p: Optional[int] = None
+    # provider: ServiceProvider
+    # popularity_score: float = Field(alias="popularityScore")
+
+
+class SuggestionsResponse(TrendingServiceResponse):
+    p: Optional[float]
+
+
+class MpesaTransactionBase(BaseModel):
+    phone_number: str = Field(index=True, alias="phoneNumber")
+    amount: int
+    reference: str = Field(index=True)
+    checkout_request_id: str = Field(unique=True, index=True, alias="checkoutRequestId")
+    merchant_request_id: str = Field(index=True, alias="merchantRequestId")
+    mpesa_receipt_number: Optional[str] = Field(
+        default=None, index=True, alias="mpesaReceiptNumber"
+    )
+    result_code: int = Field(default=-1, alias="resultCode")
+    result_desc: Optional[str] = Field(default=None, alias="resultDesc")
+    # transaction_date: Optional[datetime] = Field(default=None, alias="transactionDate")
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+
+
+class TransactionCreate(MpesaTransactionBase):
+    pass
+
+
+class TransactionUpdate(MpesaTransactionBase):
+    pass
+
+
+class TransactionRead(MpesaTransactionBase):
+    status: Optional[OrderStatus] = None
+
+
+class PhonePayload(BaseModel):
+    phone: str
+    format_international: bool = False
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, v: str, values) -> str:
+        formatted = validate_and_format_kenyan_phone(
+            v, format=values.get("format_international", False)
+        )
+        if formatted is None:
+            raise ValueError("Invalid Kenyan phone number")
+        return formatted
+
+
+class StkRequest(BaseModel):
+    phone: str  # Format: 2547xxxxxxxx
+    amount: int
+    reference: str  # Your order/invoice/account reference
+    description: str = "Payment via M-Pesa"

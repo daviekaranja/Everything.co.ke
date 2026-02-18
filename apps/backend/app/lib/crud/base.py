@@ -1,9 +1,12 @@
 from typing import Generic, Type, TypeVar, Optional, Sequence, Any, Dict
 from uuid import UUID
 from pydantic import BaseModel, ValidationError, TypeAdapter
+from sqlalchemy.exc import IntegrityError, DatabaseError
 from sqlmodel import SQLModel, select, col
 from sqlmodel.ext.asyncio.session import AsyncSession
 from fastapi import HTTPException
+
+from app.lib.utils.logger_setup import logger
 
 # ---------------------------------------------------------
 # Generic type variables
@@ -114,14 +117,20 @@ class BaseCRUD(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         *,
         obj_in: CreateSchemaType,
     ) -> ModelType:
-        obj_data = obj_in.model_dump()
-        db_obj = self.model(**obj_data)
+        try:
+            obj_data = obj_in.model_dump()
+            db_obj = self.model(**obj_data)
 
-        db.add(db_obj)
-        await db.flush()  # 👈 let DB generate UUID + timestamps
-        await db.refresh(db_obj)
+            db.add(db_obj)
+            await db.flush()  # 👈 let DB generate UUID + timestamps
+            await db.refresh(db_obj)
 
-        return db_obj
+            return db_obj
+        except IntegrityError as error:
+            logger.error(f"integrity error: {error}")
+            await db.rollback()
+        except DatabaseError as error:
+            logger.error(f"database error: {error}")
 
     # -----------------------------------------------------
     # UPDATE

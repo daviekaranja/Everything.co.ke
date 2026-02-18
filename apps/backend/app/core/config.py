@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from typing import List
-from pydantic import AnyHttpUrl, TypeAdapter
+from pydantic import AnyHttpUrl, TypeAdapter, SecretStr, Field, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,6 +27,8 @@ class Settings(BaseSettings):
     # Input should be a comma-separated string: "http://localhost:3000,https://everything.ke"
 
     BACKEND_CORS_ORIGINS: str = ""
+    allowed_origins: str
+    data_protection: bool
 
     @property
     def cors_origins(self) -> List[str]:
@@ -83,3 +87,46 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+# ──────────────────────────────────────────────
+# Config – you can create this manually or from .env
+# ──────────────────────────────────────────────
+class MpesaConfig(BaseModel):
+    consumer_key: SecretStr
+    consumer_secret: SecretStr
+    shortcode: str = Field(..., description="PayBill or Till Number")
+    passkey: SecretStr | None = None  # Required only for STK Push
+    environment: str = "sandbox"  # sandbox | production
+    callback_base_url: str  # https://yourdomain.com/api/v1
+
+    @property
+    def api_base(self) -> str:
+        base = (
+            "https://sandbox.safaricom.co.ke"
+            if self.environment == "sandbox"
+            else "https://api.safaricom.co.ke"
+        )
+        return base
+
+    @property
+    def oauth_url(self) -> str:
+        return f"{self.api_base}/oauth/v1/generate?grant_type=client_credentials"
+
+    @property
+    def register_url(self) -> str:
+        return f"{self.api_base}/mpesa/c2b/v1/registerurl"
+
+    @property
+    def stk_push_url(self) -> str:
+        return f"{self.api_base}/mpesa/stkpush/v1/processrequest"
+
+    @property
+    def stk_query_url(self) -> str:
+        return f"{self.api_base}/mpesa/stkpushquery/v1/query"
+
+
+class MpesaSettings(MpesaConfig, BaseSettings):  # ← for .env only
+    model_config = SettingsConfigDict(
+        env_prefix="MPESA_", extra="ignore", env_file=(".env", ".env.local")
+    )

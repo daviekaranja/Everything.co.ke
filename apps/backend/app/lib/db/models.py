@@ -7,7 +7,12 @@ from sqlalchemy import DateTime, func, text, Enum, JSON
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
 from sqlmodel import Field, SQLModel, Column, Relationship, Index
 
-from app.lib.db.schemas import OrderStatus, ServiceProvider, ServiceCategory
+from app.lib.db.schemas import (
+    OrderStatus,
+    ServiceProvider,
+    ServiceCategory,
+    MpesaTransactionBase,
+)
 
 # --- DIALECT ADAPTATION ---
 # This ensures SQLite (testing) uses JSON and Postgres (prod) uses JSONB
@@ -80,6 +85,8 @@ class Order(BaseMixin, table=True):
     __tablename__ = "orders"
     user_id: UUID = Field(foreign_key="users.id", index=True, alias="userId")
     service_id: UUID = Field(foreign_key="services.id", index=True, alias="serviceId")
+    amount: int = Field(nullable=True)
+    name: str = Field(nullable=True)
     status: OrderStatus = Field(
         default=OrderStatus.PENDING, sa_column=Column(Enum(OrderStatus), nullable=False)
     )
@@ -172,3 +179,11 @@ class Authors(BaseMixin, table=True):
     )
 
     posts: List["BlogPost"] = Relationship(back_populates="author")
+
+
+class MpesaTransaction(BaseMixin, MpesaTransactionBase, table=True):
+    __tablename__ = "transactions"  # ← good, different from class name
+
+    status: OrderStatus = Field(
+        sa_column=Column(Enum(OrderStatus), index=True, default=OrderStatus.PENDING)
+    )
