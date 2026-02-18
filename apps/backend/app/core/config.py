@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     # Input should be a comma-separated string: "http://localhost:3000,https://everything.ke"
 
     BACKEND_CORS_ORIGINS: str = ""
+    allowed_origins: str
+    data_protection: bool
 
     @property
     def cors_origins(self) -> List[str]:

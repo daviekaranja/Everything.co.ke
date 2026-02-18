@@ -14,6 +14,7 @@ from app.api.deps import (
 )  # Assuming engine is exported from deps or db config
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from app.lib.utils.middlewares import PublicDataGuard
 
 
 @asynccontextmanager
@@ -61,6 +62,8 @@ def create_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    application.add_middleware(PublicDataGuard)
 
     # 2. Global Exception Handler
     @application.exception_handler(Exception)
