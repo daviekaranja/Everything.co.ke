@@ -1,5 +1,4 @@
 name: Build, Push & Deploy Everything API
-
 on:
   push:
     tags:
