@@ -84,6 +84,10 @@ yarn-error.log*
 .docker-compose.override.yml
 
 # --- SAFETY OVERRIDES ---
-# Explicitly allow your source library folders even if a rule above matches
+# 1. Allow the library folders
 !apps/backend/app/lib/
 !apps/frontend/src/lib/
+
+# 2. BUT still ignore python cache inside them
+**/__pycache__/
+*.py[cod]
