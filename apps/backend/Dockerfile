@@ -58,6 +58,7 @@ RUN pip install --no-cache-dir -r apps/backend/requirements.txt && pip install g
 # 3. Replicate the EXACT structure from the image
 # We copy the local folder into the matching path in the container
 COPY apps/backend/app ./apps/backend/app
+COPY apps/backend/static ./apps/backend/static
 COPY apps/backend/alembic ./apps/backend/alembic
 COPY apps/backend/alembic.ini ./apps/backend/alembic.ini
 COPY apps/backend/entrypoint.sh ./apps/backend/entrypoint.sh
