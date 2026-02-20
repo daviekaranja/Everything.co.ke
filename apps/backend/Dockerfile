@@ -4,42 +4,33 @@
 
 # WORKDIR /app
 
-# # Set environment variables
 # ENV PYTHONDONTWRITEBYTECODE=1
 # ENV PYTHONUNBUFFERED=1
 
-# # Install system dependencies
 # RUN apt-get update && apt-get install -y --no-install-recommends \
 #     curl \
 #     && rm -rf /var/lib/apt/lists/*
 
-# # --- MONOREPO PATHS START HERE ---
-
-# # 1. Copy requirements using the path from the root context
+# # 1. Copy requirements from the monorepo context
 # COPY apps/backend/requirements.txt .
 
 # # 2. Install dependencies
 # RUN pip install --no-cache-dir -r requirements.txt && pip install gunicorn
 
-# # 3. Copy the backend source code
-# # Note: This only copies the backend folder's contents into /app
-# COPY apps/backend/ .
+# COPY apps/backend/app ./app
+# COPY apps/backend/alembic ./alembic
+# COPY apps/backend/alembic.ini .
+# COPY apps/backend/entrypoint.sh .
 
-# # Give execution rights to the entrypoint script
+# # Crucial: Ensure the 'app' directory is in the python path
+# ENV PYTHONPATH=/app
+
 # RUN chmod +x entrypoint.sh
 
-# # 4. (Optional) If you have a shared package you need:
-# # COPY packages/shared-auth ./shared-auth
-
-# # --- MONOREPO PATHS END HERE ---
 
 # EXPOSE 8000
 
-# # Ensure the path to 'main:app' is correct inside the /app folder
-# #CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "main:app", "--bind", "0.0.0.0:8000"]
-# #CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--chdir", "/app", "app.main:app", "--bind", "0.0.0.0:8000"]
-
-# # Use the script as the entrypoint
+# # Set PYTHONPATH so the 'app' module is discoverable from the root
 # ENTRYPOINT ["./entrypoint.sh"]
 
 
@@ -48,6 +39,7 @@ FROM python:3.12-slim
 
 LABEL authors="Davie Karanja"
 
+# Set the working directory to the root of your project inside the container
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -57,29 +49,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# 1. Copy requirements from the monorepo context
-COPY apps/backend/requirements.txt .
+# 1. Copy requirements first for caching
+COPY apps/backend/requirements.txt ./apps/backend/
 
 # 2. Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt && pip install gunicorn
+RUN pip install --no-cache-dir -r apps/backend/requirements.txt && pip install gunicorn
 
-# 3. Copy backend source code PRESERVING the folder structure
-# We copy the content into a folder named 'app' or keep the 'apps/backend' structure
-# To fix your specific import 'from app.lib...', the code MUST be in a folder named 'app'
-# Copy the backend source code while preserving the 'app' package identity
-COPY apps/backend/app ./app
-COPY apps/backend/alembic ./alembic
-COPY apps/backend/alembic.ini .
-# COPY apps/backend/main.py .
-COPY apps/backend/entrypoint.sh .
+# 3. Replicate the EXACT structure from the image
+# We copy the local folder into the matching path in the container
+COPY apps/backend/app ./apps/backend/app
+COPY apps/backend/alembic ./apps/backend/alembic
+COPY apps/backend/alembic.ini ./apps/backend/alembic.ini
+COPY apps/backend/entrypoint.sh ./apps/backend/entrypoint.sh
 
-# Crucial: Ensure the 'app' directory is in the python path
-ENV PYTHONPATH=/app
+# 4. Set WORKDIR to the backend folder so entrypoint.sh runs from there
+WORKDIR /app/apps/backend
+
+# Ensure the root of the backend is in PYTHONPATH so 'app' is found
+ENV PYTHONPATH=/app/apps/backend
 
 RUN chmod +x entrypoint.sh
 
-
 EXPOSE 8000
 
-# Set PYTHONPATH so the 'app' module is discoverable from the root
 ENTRYPOINT ["./entrypoint.sh"]
