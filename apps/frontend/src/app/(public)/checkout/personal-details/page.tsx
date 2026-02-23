@@ -47,7 +47,7 @@ function CheckoutContent() {
   return (
     <div className="w-full max-w-xl mx-auto">
       <div className="pb-20">
-        <p className="text-h3 text-text-main">Enter Your Details to continue</p>
+        {/* <p className="text-h3 text-text-main">Enter Your Details to continue</p> */}
         <CheckoutForm service={service} />
       </div>
     </div>
