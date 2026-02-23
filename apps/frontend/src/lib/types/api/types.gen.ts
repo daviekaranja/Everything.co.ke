@@ -421,7 +421,7 @@ export type UserCreateSchema = {
   /**
    * Contactmethod
    */
-  contactMethod: string;
+  contactMethod?: string | null;
 };
 
 /**
@@ -447,7 +447,7 @@ export type UserRead = {
   /**
    * Contactmethod
    */
-  contactMethod: string;
+  contactMethod?: string | null;
   /**
    * Id
    */

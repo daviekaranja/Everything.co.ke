@@ -12,7 +12,7 @@ export default async function SuccessPage({
   if (!checkoutRequestid) return notFound();
 
   return (
-    <div className="flex flex-col items-center p-4 justify-center min-h-screen mx-auto w-full md:w-1/4">
+    <div className="w-full flex justify-center py-12">
       <TransactionStatusDisplay checkoutId={checkoutRequestid} />
     </div>
   );

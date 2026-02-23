@@ -197,7 +197,9 @@ export const zUserCreateSchema = z.object({
   secondName: z.string(),
   email: z.email(),
   phoneNumber: z.string(),
-  contactMethod: z.string(),
+  contactMethod: z
+    .optional(z.union([z.string(), z.null()]))
+    .default("Whatsapp"),
 });
 
 /**
@@ -208,7 +210,9 @@ export const zUserRead = z.object({
   secondName: z.string(),
   email: z.email(),
   phoneNumber: z.string(),
-  contactMethod: z.string(),
+  contactMethod: z
+    .optional(z.union([z.string(), z.null()]))
+    .default("Whatsapp"),
   id: z.uuid(),
 });
 
