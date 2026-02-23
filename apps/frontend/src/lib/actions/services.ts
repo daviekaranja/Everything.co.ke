@@ -1,4 +1,3 @@
-import { de } from "zod/v4/locales";
 import axiosClient from "../axios-client";
 
 // Module-level cache to prevent re-fetching on every component mount

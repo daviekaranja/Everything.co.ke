@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,7 @@ import { AlertCircle } from "lucide-react";
 import { zUserCreateSchema } from "@/lib/types/api/zod.gen";
 import { ServiceRead } from "@/lib/types/api";
 import { Button } from "../ui/button";
+import { toast } from "sonner";
 
 // Matching your API schema exactly
 
@@ -26,8 +27,8 @@ export default function CheckoutForm({ service }: { service: ServiceRead }) {
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: zodResolver(zUserCreateSchema),
-    defaultValues: { contactMethod: "whatsapp" },
+    resolver: zodResolver(zUserCreateSchema) as Resolver<FormData>,
+    // defaultValues: { contactMethod: "whatsapp" },
   });
 
   const onSubmit = async (data: FormData) => {
@@ -48,9 +49,14 @@ export default function CheckoutForm({ service }: { service: ServiceRead }) {
         };
 
         const { data } = await axiosClient.post("/orders/create", orderData);
+        if (loading) {
+          toast.loading("Creating order...");
+        }
         if (!data) {
+          toast.error("Failed to create order. Please try again.");
           throw new Error("Failed to create order");
         }
+        toast.success("Order created successfully! Redirecting to payment...");
 
         router.push(
           `/checkout/stk-push?serviceId=${service.id}&orderId=${data.id}&serviceName=${data.name}&amount=${data.amount}`,
@@ -67,9 +73,22 @@ export default function CheckoutForm({ service }: { service: ServiceRead }) {
 
   return (
     <div className="w-full p-4 shadow-sm bg-brand-bg border border-card-border rounded-lg">
+      <header className="border-b border-black/5 dark:border-white/5 pb-4">
+        <div className="max-w-3xl">
+          <p className=" text-text-muted text-center text-h3">Checkout Form</p>
+          <p className="text-sm text-text-muted">
+            Please provide your details to complete the booking for{" "}
+            <span className="font-bold">
+              <br />
+              {service.name}
+            </span>
+            .
+          </p>
+        </div>
+      </header>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <section id="fullname">
-          <p className="text-h3 text-text-main">Personal Details</p>
+          <p className=" text-text-main">Full Name</p>
           <div className="flex gap-2 justify-between">
             <Input
               label="First Name"
@@ -88,7 +107,7 @@ export default function CheckoutForm({ service }: { service: ServiceRead }) {
 
         {/* SECTION 2: COMMUNICATION */}
         <section className="space-y-6">
-          <p className="text-h3 text-text-main">Contact Channels</p>
+          <p className="text-text-main">Contact</p>
 
           <section id="contact">
             <div className="flex gap-4">

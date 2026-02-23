@@ -6,11 +6,7 @@ const nextConfig: NextConfig = {
       {
         // Matches any request starting with /api/
         source: "/api/:path*",
-        // Points to your FastAPI backend
-        destination:
-          process.env.NODE_ENV === "development"
-            ? "http://localhost:8000/api/v1/:path*"
-            : "https://api.everything.co.ke/api/v1/:path*",
+        destination: `${process.env.API_BASE_URL}/:path*`, // Proxy to Backend API
       },
     ];
   },

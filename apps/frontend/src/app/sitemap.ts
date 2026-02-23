@@ -2,10 +2,9 @@ import { MetadataRoute } from "next";
 import { blogPosts } from "@/lib/data/blogs";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://everything.co.ke";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
-  const apiBaseUrl = process.env.API_BASE_URL || "http://localhost:8000/api/v1";
+  const apiBaseUrl = process.env.API_BASE_URL;
 
   // 1. Static Pages
   const staticPages: MetadataRoute.Sitemap = [

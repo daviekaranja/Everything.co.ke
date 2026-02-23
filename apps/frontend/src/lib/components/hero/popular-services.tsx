@@ -1,32 +1,26 @@
 "use client";
 
 import { PopularCard } from "../ui-elements";
-import { getPopularServices } from "@/lib/actions/services";
-import { useState, useEffect } from "react";
 import { LinkButton } from "../ui/LinkButton";
 import { ArrowRight } from "lucide-react";
+import useServices from "@/lib/hooks/services/useservices";
+import { SuggestionsResponse } from "@/lib/types/api";
 
 export default function PopularServices() {
-  const [service, setService] = useState([]);
+  const { data } = useServices("trending", { limit: 3 });
 
-  const fetchData = async () => {
-    const data = await getPopularServices();
-    setService(data);
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
   return (
     <div className="w-full flex flex-col gap-8 py-4">
-      {/* flex-col: Stacks vertically on mobile
-          md:flex-row: Side-by-side on desktop
-          flex-wrap: Wraps to new lines if there are many services (no more crashing/overflow)
-      */}
       <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-        {service.map((data, i) => (
-          <div key={i} className="w-full md:w-auto">
-            <PopularCard service={data} />
+        {data?.map((service: SuggestionsResponse, index: number) => (
+          <div key={index} className="w-full md:w-auto">
+            <PopularCard
+              n={service.n}
+              s={service.s}
+              c={service.c}
+              p={service.p}
+              d={service.d}
+            />
           </div>
         ))}
       </div>
