@@ -70,18 +70,18 @@ export default function StkPushForm({ trustData }: { trustData: any }) {
   };
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-500">
+    <div className="smooth-card rounded-xl p-8">
       {/* TRANSACTIONAL BLUEPRINT: Lead with Summary */}
       <section aria-label="Order Summary">
-        <div className=" shadow-sm p-4 bg-brand-bg dark:bg-brand-dark rounded-2xl mx-auto">
+        <div className=" ">
           <div className="flex justify-between items-start mb-6">
-            <h1 className="text-h3  tracking-tight">
+            <p className="text-text-accent font-bold tracking-tight">
               Payment for {trustData.serviceName}
-            </h1>
-            {/* <CheckCircle2 size={14} className="text-green-500" /> */}
+            </p>
+            <CheckCircle2 size={14} className="text-green-500" />
           </div>
           <div className="flex justify-between items-end border-t border-black/5 pt-6">
-            <span className="text-[10px] font-black uppercase text-gray-400">
+            <span className=" font-black uppercase text-accent">
               Total to Pay
             </span>
             <span className="text-h3 font-black tracking-tighter">
@@ -111,7 +111,7 @@ export default function StkPushForm({ trustData }: { trustData: any }) {
                     id="phone"
                     type="tel"
                     placeholder="07XX XXX XXX"
-                    className="w-full bg-transparent py-4 text-h3 font-black tracking-tighter outline-none"
+                    className="w-full bg-transparent py-4 text-h3 font-text-main tracking-tighter outline-none"
                   />
                 </div>
                 {errors.phone && (

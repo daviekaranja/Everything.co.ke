@@ -63,22 +63,29 @@ export default function TransactionStatusDisplay({
         setData(result);
 
         // Normalize backend status to match your Zod Enum
-        const backendStatus = result.status?.toLowerCase();
+        const backendStatus = result.status || zOrderStatus.enum.Pending;
+
+        if (backendStatus === zOrderStatus.enum.Paid) {
+          fireConfetti();
+          setStatus(zOrderStatus.enum.Paid);
+          toast.success("Payment successful! Thank you for your purchase.");
+        }
 
         if (
-          backendStatus === "paid" ||
-          backendStatus === "completed" ||
-          result.resultCode === 0
-        ) {
-          if (status !== zOrderStatus.enum.Paid) fireConfetti();
-          setStatus(zOrderStatus.enum.Paid);
-        } else if (
-          backendStatus === "cancelled" ||
+          backendStatus === zOrderStatus.enum.Cancelled ||
           (result.resultCode && result.resultCode !== 0)
         ) {
           setStatus(zOrderStatus.enum.Cancelled);
-        } else {
+          toast.error(
+            `Transaction failed: ${result.resultDesc || "Unknown error"}`,
+          );
+        }
+
+        if (backendStatus === zOrderStatus.enum.Pending) {
           setStatus(zOrderStatus.enum.Pending);
+          toast.info(
+            `Transaction status: ${backendStatus}. Please complete the payment.`,
+          );
         }
       } catch (err) {
         toast.error("Network error. Please check your connection.");
@@ -93,8 +100,8 @@ export default function TransactionStatusDisplay({
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (
-      status === zOrderStatus.enum.Pending ||
-      status === zOrderStatus.enum["In Progress"]
+      status === zOrderStatus.enum.Pending
+      // status === zOrderStatus.enum["In Progress"]
     ) {
       interval = setInterval(() => verifyPayment(true), 5000);
     }
@@ -103,7 +110,7 @@ export default function TransactionStatusDisplay({
 
   return (
     /* Responsive Container: Full width on mobile, max-w-lg + centered on desktop */
-    <div className="w-full sm:max-w-lg sm:mx-auto sm:my-10 bg-white dark:bg-brand-dark sm:rounded-[2.5rem] sm:shadow-xl overflow-hidden border-slate-100 dark:border-slate-800">
+    <div className="w-full sm:max-w-lg sm:mx-auto smooth-card rounded-xl">
       <div className="p-6 md:p-10">
         {/* SUCCESS STATE */}
         {status === zOrderStatus.enum.Paid && (
