@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-// import TransactionStatusDisplay from "@/components/TransactionStatusDisplay";
 import TransactionStatusDisplay from "@/lib/components/payments/status";
 
 export default async function SuccessPage({

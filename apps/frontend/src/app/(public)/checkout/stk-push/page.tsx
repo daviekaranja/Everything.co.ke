@@ -47,7 +47,7 @@ export default async function StkPushPage({ searchParams }: PageProps) {
   return (
     <main
       id="main-content"
-      className="min-h-screen flex flex-col bg-brand-bg dark:bg-brand-dark text-text-main p-2 md:p-6 transition-all duration-300 items-center"
+      className="min-h-screen mx-auto mt-6 md:mt-9 flex flex-col  text-text-main "
     >
       <script
         type="application/ld+json"
